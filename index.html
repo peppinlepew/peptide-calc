@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peptide Reconstitution Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Peptide Reconstitution Calculator</h1>
+        <div class="calculator-card">
+            <div class="input-group">
+                <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
+                <select id="vialQuantitySelect">
+                    <option value="15">15 mg</option>
+                    <option value="20">20 mg</option>
+                    <option value="25">25 mg</option>
+                    <option value="30" selected>30 mg</option>
+                    <option value="40">40 mg</option>
+                    <option value="50">50 mg</option>
+                    <option value="60">60 mg</option>
+                    <option value="custom">Custom</option>
+                </select>
+                <input type="number" id="vialQuantityCustom" min="0" step="0.1" placeholder="Enter custom quantity" style="display:none; margin-top:0.5rem;">
+            </div>
+            <div class="input-group">
+                <label for="doseSelect">Peptide Dose (mg)</label>
+                <select id="doseSelect">
+                    <option value="2.5">2.5 mg</option>
+                    <option value="5" selected>5 mg</option>
+                    <option value="7.5">7.5 mg</option>
+                    <option value="10">10 mg</option>
+                    <option value="12.5">12.5 mg</option>
+                    <option value="15">15 mg</option>
+                    <option value="custom">Other</option>
+                </select>
+                <input type="number" id="doseCustom" min="0" step="0.1" placeholder="Enter custom dose" style="display:none; margin-top:0.5rem;">
+            </div>
+            <div class="input-group">
+                <label for="unitsSelect">Desired Units per Dose</label>
+                <select id="unitsSelect">
+                    <option value="25" selected>25</option>
+                    <option value="35">35</option>
+                    <option value="50">50</option>
+                    <option value="75">75</option>
+                    <option value="100">100</option>
+                    <option value="custom">Other</option>
+                </select>
+                <input type="number" id="unitsCustom" min="0" step="0.1" placeholder="Enter custom units" style="display:none; margin-top:0.5rem;">
+            </div>
+            <div class="results">
+                <div class="result-item">
+                    <h3>BAC Water Required</h3>
+                    <p id="bacWater">-</p>
+                </div>
+                <div class="result-item">
+                    <h3>Doses per Vial</h3>
+                    <p id="dosesPerVial">-</p>
+                </div>
+                <div class="result-item">
+                    <h3>Concentration</h3>
+                    <p id="concentration">-</p>
+                </div>
+            </div>
+            <p id="warningMessage" class="warning-message" style="display:none;">Warning: Calculated concentration exceeds the recommended maximum of 20&nbsp;mg/ml.</p>
+        </div>
+        <div class="calculator-card">
+            <h2>Label Generator</h2>
+            <div class="input-group">
+                <label for="labelInput">Label</label>
+                <input type="text" id="labelInput" placeholder="eg. JHT T-30">
+            </div>
+            <div class="input-group">
+                <label for="urlInput">URL</label>
+                <input type="url" id="urlInput" placeholder="eg. results URL">
+            </div>
+            <div id="labelPreview" class="label-preview"></div>
+            <div id="pngPreview" class="png-preview">
+                <h3>PNG Preview</h3>
+                <div class="preview-container"></div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</body>
+</html>
