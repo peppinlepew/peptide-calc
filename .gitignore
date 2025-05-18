@@ -1,1 +1,22 @@
-*~
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node.js (if you add npm packages later)
+node_modules/
+npm-debug.log
+
+# Build directories
+dist/
+build/
+
+# Environment files
+.env
+.env.local
