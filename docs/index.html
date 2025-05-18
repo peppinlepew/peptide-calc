@@ -13,6 +13,9 @@
 <body>
     <div class="container">
         <h1>Peptide Reconstitution Calculator</h1>
+        <div class="motivation-note">
+            <p>This calculator simplifies peptide reconstitution by determining the precise amount of BAC water needed to achieve clean, round numbers of units per dose. No more mental math or imprecise measurements!</p>
+        </div>
         <div class="calculator-card">
             <div class="input-group">
                 <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
@@ -67,7 +70,7 @@
                     <p id="concentration">-</p>
                 </div>
             </div>
-            <p id="warningMessage" class="warning-message" style="display:none;">Warning: Calculated concentration exceeds the recommended maximum of 20&nbsp;mg/ml.</p>
+            <p id="warningMessage" class="warning-message" style="display:none;">Warning: Calculated concentration exceeds the recommended maximum threshold.</p>
         </div>
         <div class="calculator-card">
             <h2>Label Generator</h2>
@@ -88,5 +91,19 @@
     </div>
     <script src="script.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <h3>Contribute</h3>
+                <p>This calculator is an open source project. Have ideas for improvements or new features?</p>
+                <ul>
+                    <li>Dynamic thresholds for concentration warnings</li>
+                    <li>Support for more label sizes and templates</li>
+                    <li>Additional calculation methods for peptides</li>
+                </ul>
+                <p>View the project on <a href="https://github.com/peppinlepew/peptide-calc" target="_blank">GitHub</a> to contribute or suggest changes.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const labelPreview = document.getElementById('labelPreview');
 
     // After DOM element declarations, add constants
-    const THRESHOLD_CONC = 20; // mg/ml
+    const THRESHOLD_CONC = 30; // mg/ml
     const UNIT_OPTIONS = [25, 35, 50, 75, 100];
 
     function calculateResults() {
@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (concentration > THRESHOLD_CONC) {
             resultItems.forEach(item => item.classList.add('alert'));
             warningMessage.style.display = 'block';
+            warningMessage.textContent = `Warning: Calculated concentration exceeds the recommended maximum of ${THRESHOLD_CONC} mg/ml.`;
         } else {
             resultItems.forEach(item => item.classList.remove('alert'));
             warningMessage.style.display = 'none';
