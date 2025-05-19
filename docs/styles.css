@@ -150,18 +150,54 @@ button:hover {
     }
 }
 
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.radio-label input[type="radio"] {
+    width: auto;
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.label-set {
+    margin-bottom: 1.5rem;
+}
+
+.label-set h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+}
+
 .label-preview {
-    display: none;
+    display: flex;
     align-items: stretch;
     border: 1px solid #ccc;
     padding: 10px;
-    margin-top: 20px;
+    margin-top: 10px;
     background-color: white;
     height: 10mm;
     min-height: 10mm;
     max-height: 10mm;
     max-width: 50mm;
     overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.label-preview:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transform: scale(1.02);
 }
 
 .label-preview img {
@@ -192,34 +228,44 @@ button:hover {
     white-space: nowrap;
 }
 
-.download-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.download-buttons button {
-    flex: 1;
-}
-
 .png-preview {
     margin-top: 20px;
 }
 
 .png-preview h3 {
-    margin-bottom: 10px;
-    font-size: 1.1rem;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    text-align: center;
+}
+
+.previews-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
 }
 
 .preview-container {
-    border: 1px dashed #ccc;
-    padding: 10px;
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    padding: 20px;
     background-color: #f9f9f9;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-container:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .preview-container img {
@@ -229,11 +275,20 @@ button:hover {
     transition: transform 0.2s, box-shadow 0.2s;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    background-color: white;
+    padding: 10px;
+    border-radius: 4px;
+    display: block;
 }
 
-.preview-container img:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.error-message {
+    color: #b00020;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: center;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: var(--border-radius);
 }
 
 .motivation-note {
@@ -293,4 +348,48 @@ button:hover {
 .footer a:hover {
     color: #357abd;
     text-decoration: underline;
+}
+
+#labels-container {
+    margin-top: 20px;
+}
+
+#labels-container h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+    text-align: center;
+}
+
+.labels-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.label-container {
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+    border: 1px solid #ddd;
+    padding: 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.label-container:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.label-container img {
+    max-width: 100%;
+    cursor: pointer;
+    display: block;
 }

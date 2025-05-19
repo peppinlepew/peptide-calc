@@ -9,6 +9,7 @@
     <title>Peptide Reconstitution Calculator</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="canonical" href="https://github.io/YOUR_USERNAME/peptide-calculator/">
+    <script src="https://cdn.jsdelivr.net/npm/bwip-js@3.4.0/dist/bwip-js-min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -62,10 +63,16 @@
                 <label for="urlInput">URL</label>
                 <input type="url" id="urlInput" placeholder="eg. results URL">
             </div>
-            <div id="labelPreview" class="label-preview"></div>
-            <div id="pngPreview" class="png-preview">
-                <h3>PNG Preview</h3>
-                <div class="preview-container"></div>
+            
+            <!-- Canvas for Data Matrix code generation (hidden) -->
+            <canvas id="dataMatrixCanvas" style="display:none;"></canvas>
+            
+            <div id="labels-container">
+                <h3>Labels (Click to Download)</h3>
+                <div class="labels-grid">
+                    <div class="label-container qr-label"></div>
+                    <div class="label-container datamatrix-label"></div>
+                </div>
             </div>
         </div>
     </div>
