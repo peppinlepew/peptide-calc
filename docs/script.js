@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectId: 'unitsSelect',
                 customInputId: 'unitsCustom',
                 values: [20, 30, 40, 50, 75, 100],
-                defaultValue: 25,
+                defaultValue: 40,
                 suffix: "",
                 customLabel: "Other"
             }
@@ -493,9 +493,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const text3 = `${dose}mg/${units}u`;
         
         // Measure text widths
-        const text1Width = ctx.measureText(text1).width;
-        const text2Width = ctx.measureText(text2).width;
-        const text3Width = ctx.measureText(text3).width;
+            const text1Width = ctx.measureText(text1).width;
+            const text2Width = ctx.measureText(text2).width;
+            const text3Width = ctx.measureText(text3).width;
         const maxTextWidth = Math.max(text1Width, text2Width, text3Width) / scaleFactor;
         
         // Calculate total width (constrained by maxWidthMm)
@@ -506,11 +506,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set canvas dimensions (scaled up for better quality)
         canvas.width = Math.floor(baseWidth * scaleFactor);
         canvas.height = Math.floor(baseHeightPx * scaleFactor);
-        
-        // Fill background
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+            
+            // Fill background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
         // Ensure crisp rendering
         ctx.imageSmoothingEnabled = false;
         
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(barcodeImg, 0, 0, barcodeSize, barcodeSize);
         
         // Draw text
-        ctx.fillStyle = 'black';
+            ctx.fillStyle = 'black';
         ctx.textBaseline = 'top';
         ctx.textAlign = 'left';
         
@@ -552,10 +552,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add click event to download the image
         labelImg.addEventListener('click', function() {
-            const link = document.createElement('a');
+                const link = document.createElement('a');
             link.download = `label-${codeType}.png`;
             link.href = this.src;
-            link.click();
+                link.click();
         });
         
         // Create container for image and description

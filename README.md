@@ -1,5 +1,7 @@
 # Peptide Reconstitution Calculator
 
+![](docs/favicon.png)
+
 A web-based calculator for determining the amount of BAC water required for peptide reconstitution and generating printable labels.
 
 ## Features
@@ -7,8 +9,10 @@ A web-based calculator for determining the amount of BAC water required for pept
 - Calculate BAC water required based on peptide quantity, dose, and units per dose
 - Real-time calculation updates as you enter values
 - Predefined common quantities and doses with custom options
-- Label generator with QR code linking to test results
-- Download labels as SVG or PNG
+- Label generator with QR code and Data Matrix code options
+- Download labels directly by clicking on the image
+- URL shortening integration for compact barcodes
+- Custom favicon and branding
 - Optimized for printing on small vials (10mm height)
 
 ## GitHub Pages
