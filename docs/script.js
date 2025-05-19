@@ -52,10 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
             labelInput: document.getElementById('labelInput'),
             dateInput: document.getElementById('dateInput'),
             urlInput: document.getElementById('urlInput'),
+            shortenedUrlDisplay: document.getElementById('shortenedUrlDisplay'),
             qrLabelContainer: document.querySelector('.label-container.qr-label'),
             datamatrixLabelContainer: document.querySelector('.label-container.datamatrix-label')
         }
     };
+
+    // Store the shortened URL
+    let shortenedUrl = '';
 
     // Initialize dropdowns and inputs
     function initializeDropdown(config) {
@@ -201,7 +205,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function generateLabels() {
         // Get the label content values
         const label = elements.labelElements.labelInput.value || 'Peptide';
-        const url = elements.labelElements.urlInput.value || CONFIG.constants.defaultRickrollURL;
+        
+        // Use shortened URL if available, otherwise use original URL
+        let url = elements.labelElements.urlInput.value || CONFIG.constants.defaultRickrollURL;
+        if (shortenedUrl) {
+            url = shortenedUrl;
+        }
         
         // Format date as MMDDYY if provided
         const dateInput = elements.labelElements.dateInput.value;
@@ -395,7 +404,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update labels when input changes
     elements.labelElements.labelInput.addEventListener('input', generateLabels);
     elements.labelElements.dateInput.addEventListener('change', generateLabels);
-    elements.labelElements.urlInput.addEventListener('input', generateLabels);
+    elements.labelElements.urlInput.addEventListener('change', shortenUrl);
+    elements.labelElements.urlInput.addEventListener('blur', shortenUrl);
     
     // Set default date to today
     (function setDefaultDate() {
@@ -404,5 +414,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         elements.labelElements.dateInput.value = `${year}-${month}-${day}`;
+        
+        // Try to shorten URL if there's one in the input field initially
+        if (elements.labelElements.urlInput.value) {
+            shortenUrl();
+        }
     })();
+
+    // Function to validate URL
+    function isValidUrl(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+    
+    // Function to shorten URL using is.gd API
+    function shortenUrl() {
+        const url = elements.labelElements.urlInput.value.trim();
+        
+        // Only attempt to shorten if there's a valid URL
+        if (url && url.length > 0 && isValidUrl(url)) {
+            // Show loading indicator
+            elements.labelElements.shortenedUrlDisplay.innerHTML = 'Shortening URL...';
+            
+            // Call is.gd API (via a cors proxy to avoid CORS issues)
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.contents && data.contents.startsWith('https://is.gd/')) {
+                        // Store the shortened URL
+                        shortenedUrl = data.contents;
+                        
+                        // Display the shortened URL
+                        elements.labelElements.shortenedUrlDisplay.innerHTML = `
+                            Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a>
+                        `;
+                        
+                        // Generate labels with the shortened URL
+                        generateLabels();
+                    } else {
+                        throw new Error('Invalid response from shortener service');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error shortening URL:', error);
+                    elements.labelElements.shortenedUrlDisplay.innerHTML = 'Could not shorten URL - using original URL';
+                    shortenedUrl = '';
+                    generateLabels();
+                });
+        } else {
+            // Clear the shortened URL display if there's no valid URL
+            elements.labelElements.shortenedUrlDisplay.innerHTML = '';
+            shortenedUrl = '';
+            generateLabels();
+        }
+    }
 });

@@ -393,3 +393,19 @@ button:hover {
     cursor: pointer;
     display: block;
 }
+
+.shortened-url {
+    margin-top: 5px;
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    word-break: break-all;
+}
+
+.shortened-url a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.shortened-url a:hover {
+    text-decoration: underline;
+}
