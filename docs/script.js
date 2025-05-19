@@ -484,18 +484,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // Font size proportional to label height
         const fontSize = Math.floor((baseHeightPx / 3) * 0.9);
         
-        // Set up text for measuring
-        ctx.font = `${fontSize * scaleFactor}px sans-serif`;
-        
         // Prepare the three lines of text
         const text1 = label;
         const text2 = `${Math.round(concentration)} mg/ml${formattedDate ? '|' + formattedDate : ''}`;
-        const text3 = `${dose}mg/${units}u`;
+        const text3 = `${units}units = ${dose}mg`;
         
-        // Measure text widths
-            const text1Width = ctx.measureText(text1).width;
-            const text2Width = ctx.measureText(text2).width;
-            const text3Width = ctx.measureText(text3).width;
+        // Set up text for measuring - now all lines use the same font size
+        ctx.font = `${fontSize * scaleFactor}px monospace`;
+        
+        // Measure text widths - all with the same font size
+        const text1Width = ctx.measureText(text1).width;
+        const text3Width = ctx.measureText(text3).width;
+        
+        // Also measure text2 with the same font size
+        const text2Width = ctx.measureText(text2).width;
+        
+        // Calculate the maximum text width properly accounting for all three lines
         const maxTextWidth = Math.max(text1Width, text2Width, text3Width) / scaleFactor;
         
         // Calculate total width (constrained by maxWidthMm)
@@ -506,11 +510,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set canvas dimensions (scaled up for better quality)
         canvas.width = Math.floor(baseWidth * scaleFactor);
         canvas.height = Math.floor(baseHeightPx * scaleFactor);
-            
-            // Fill background
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+        
+        // Fill background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         // Ensure crisp rendering
         ctx.imageSmoothingEnabled = false;
         
@@ -519,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(barcodeImg, 0, 0, barcodeSize, barcodeSize);
         
         // Draw text
-            ctx.fillStyle = 'black';
+        ctx.fillStyle = 'black';
         ctx.textBaseline = 'top';
         ctx.textAlign = 'left';
         
@@ -529,19 +533,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const lineSpacing = baseHeightPx / 3;
         const verticalAdjustment = Math.floor(lineSpacing / 2);
         
+        // Set font for all text (same size for all lines)
+        ctx.font = `${Math.floor(fontSize * scaleFactor)}px monospace`;
+        
         // Draw line 1
         const y1 = Math.floor((centerY - lineSpacing - verticalAdjustment) * scaleFactor);
-        ctx.font = `${Math.floor(fontSize * scaleFactor)}px monospace`;
         ctx.fillText(text1, textX, y1);
         
-        // Draw line 2 (smaller font)
-        const line2FontSize = Math.floor(fontSize * 0.7);
-        ctx.font = `${Math.floor(line2FontSize * scaleFactor)}px monospace`;
+        // Draw line 2 (now same font size as others)
         const y2 = Math.floor((centerY - verticalAdjustment) * scaleFactor);
         ctx.fillText(text2, textX, y2);
         
         // Draw line 3
-        ctx.font = `${Math.floor(fontSize * scaleFactor)}px monospace`;
         const y3 = Math.floor((centerY + lineSpacing - verticalAdjustment) * scaleFactor);
         ctx.fillText(text3, textX, y3);
         
