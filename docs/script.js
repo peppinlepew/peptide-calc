@@ -550,12 +550,29 @@ document.addEventListener('DOMContentLoaded', () => {
         labelImg.src = canvas.toDataURL('image/png', 1.0);
         labelImg.style.cursor = 'pointer';
         
-        // Add click event to download the image
+        // Add click event to properly open the image in a new tab/window
         labelImg.addEventListener('click', function() {
-                const link = document.createElement('a');
-            link.download = `label-${codeType}.png`;
-            link.href = this.src;
-                link.click();
+            // Create a blob from the data URL
+            const byteString = atob(this.src.split(',')[1]);
+            const mimeString = this.src.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            
+            const blob = new Blob([ab], {type: mimeString});
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Open in a new window and release the object URL when done
+            const newWindow = window.open(blobUrl, '_blank');
+            if (newWindow) {
+                newWindow.onload = function() {
+                    // Clean up the blob URL after the window loads
+                    URL.revokeObjectURL(blobUrl);
+                };
+            }
         });
         
         // Create container for image and description
