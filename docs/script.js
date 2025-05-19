@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const useShortUrlButton = document.createElement('button');
         useShortUrlButton.id = 'useShortUrlButton';
         useShortUrlButton.className = 'toggle-button';
-        useShortUrlButton.textContent = 'Use Short URL';
+        useShortUrlButton.textContent = 'Use Short URL (easier to print)';
         
         // Add the button to the container
         buttonContainer.appendChild(useShortUrlButton);
