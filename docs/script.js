@@ -1,134 +1,218 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const vialQuantitySelect = document.getElementById('vialQuantitySelect');
-    const vialQuantityCustomInput = document.getElementById('vialQuantityCustom');
-    const doseSelect = document.getElementById('doseSelect');
-    const doseCustomInput = document.getElementById('doseCustom');
-    const unitsSelect = document.getElementById('unitsSelect');
-    const unitsCustomInput = document.getElementById('unitsCustom');
-    const bacWaterOutput = document.getElementById('bacWater');
-    const dosesPerVialOutput = document.getElementById('dosesPerVial');
-    const concentrationOutput = document.getElementById('concentration');
-    const warningMessage = document.getElementById('warningMessage');
-    const labelInput = document.getElementById('labelInput');
-    const urlInput = document.getElementById('urlInput');
-    const labelPreview = document.getElementById('labelPreview');
+    // Configuration object to centralize all parameters
+    const CONFIG = {
+        // Dropdown configurations
+        dropdowns: {
+            vialQuantity: {
+                selectId: 'vialQuantitySelect',
+                customInputId: 'vialQuantityCustom',
+                values: [2, 5, 10, 15, 20, 30, 40, 60],
+                defaultValue: 30,
+                suffix: "mg",
+                customLabel: "Custom"
+            },
+            dose: {
+                selectId: 'doseSelect',
+                customInputId: 'doseCustom',
+                values: [.25, .5, 1, 2, 2.5, 4, 5, 7.5, 8, 10, 12, 12.5, 15],
+                defaultValue: 5,
+                suffix: "mg",
+                customLabel: "Other"
+            },
+            units: {
+                selectId: 'unitsSelect',
+                customInputId: 'unitsCustom',
+                values: [20, 30, 40, 50, 75, 100],
+                defaultValue: 25,
+                suffix: "",
+                customLabel: "Other"
+            }
+        },
+        thresholdConcentration: 30, // mg/ml
+        constants: {
+            unitsPerML: 100, // 100 units = 1 ml
+            labelHeight: 10, // mm
+            labelMaxWidth: 50, // mm
+            scaleFactor: 3, // For higher resolution PNG
+            defaultRickrollURL: 'https://rickroll.it/rickroll.mp4'
+        }
+    };
 
-    // After DOM element declarations, add constants
-    const THRESHOLD_CONC = 30; // mg/ml
-    const UNIT_OPTIONS = [25, 35, 50, 75, 100];
+    // Cache DOM elements
+    const elements = {
+        selects: {},
+        customInputs: {},
+        outputs: {
+            bacWater: document.getElementById('bacWater'),
+            dosesPerVial: document.getElementById('dosesPerVial'),
+            concentration: document.getElementById('concentration'),
+            warningMessage: document.getElementById('warningMessage')
+        },
+        labelElements: {
+            labelInput: document.getElementById('labelInput'),
+            urlInput: document.getElementById('urlInput'),
+            labelPreview: document.getElementById('labelPreview'),
+            pngPreviewContainer: document.querySelector('#pngPreview .preview-container')
+        }
+    };
+
+    // Initialize dropdowns and inputs
+    function initializeDropdown(config) {
+        // Get DOM elements
+        const selectElement = document.getElementById(config.selectId);
+        const customInput = document.getElementById(config.customInputId);
+        
+        // Store references
+        elements.selects[config.selectId] = selectElement;
+        elements.customInputs[config.customInputId] = customInput;
+        
+        // Create options
+        const options = config.values.map(value => ({
+            value: value.toString(),
+            label: value + (config.suffix ? ` ${config.suffix}` : ''),
+            selected: value === config.defaultValue
+        }));
+        
+        // Add custom option
+        options.push({
+            value: "custom",
+            label: config.customLabel,
+            selected: false
+        });
+        
+        // Populate dropdown
+        populateSelectDropdown(selectElement, options);
+        
+        // Add event listeners
+        selectElement.addEventListener('change', () => {
+            handleCustomInputVisibility(selectElement, customInput);
+            calculateResults();
+        });
+        
+        customInput.addEventListener('input', calculateResults);
+        
+        return { selectElement, customInput };
+    }
+
+    // Helper function to populate a select dropdown
+    function populateSelectDropdown(selectElement, options) {
+        // Clear existing options
+        selectElement.innerHTML = '';
+        
+        // Add new options
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.label;
+            if (option.selected) {
+                optionElement.selected = true;
+            }
+            selectElement.appendChild(optionElement);
+        });
+    }
+
+    // Helper function to get value from select/custom input pair
+    function getValueFromSelectOrCustom(selectElement, customInput) {
+        if (selectElement.value === 'custom') {
+            return parseFloat(customInput.value);
+        } else {
+            return parseFloat(selectElement.value);
+        }
+    }
+    
+    // Helper function to handle custom input visibility
+    function handleCustomInputVisibility(selectElement, customInput) {
+        if (selectElement.value === 'custom') {
+            customInput.style.display = 'block';
+        } else {
+            customInput.style.display = 'none';
+            customInput.value = '';
+        }
+    }
+    
+    // Initialize all dropdowns
+    const dropdowns = {};
+    Object.entries(CONFIG.dropdowns).forEach(([key, config]) => {
+        dropdowns[key] = initializeDropdown(config);
+    });
+
+    // Initial calculation
+    calculateResults();
 
     function calculateResults() {
-        let vialQuantity;
-        let dose;
-        let unitsPerDose;
-
-        // Determine vial quantity based on selection
-        if (vialQuantitySelect.value === 'custom') {
-            vialQuantity = parseFloat(vialQuantityCustomInput.value);
-        } else {
-            vialQuantity = parseFloat(vialQuantitySelect.value);
-        }
-
-        // Determine dose based on selection
-        if (doseSelect.value === 'custom') {
-            dose = parseFloat(doseCustomInput.value);
-        } else {
-            dose = parseFloat(doseSelect.value);
-        }
-
-        // Determine units per dose based on selection
-        if (unitsSelect.value === 'custom') {
-            unitsPerDose = parseFloat(unitsCustomInput.value);
-        } else {
-            unitsPerDose = parseFloat(unitsSelect.value);
-        }
+        // Get values from all dropdowns
+        const vialQuantity = getValueFromSelectOrCustom(
+            dropdowns.vialQuantity.selectElement, 
+            dropdowns.vialQuantity.customInput
+        );
+        
+        const dose = getValueFromSelectOrCustom(
+            dropdowns.dose.selectElement, 
+            dropdowns.dose.customInput
+        );
+        
+        const unitsPerDose = getValueFromSelectOrCustom(
+            dropdowns.units.selectElement, 
+            dropdowns.units.customInput
+        );
 
         // Validate inputs
         if (
             isNaN(vialQuantity) || isNaN(dose) || isNaN(unitsPerDose) ||
             vialQuantity <= 0 || dose <= 0 || unitsPerDose <= 0
         ) {
-            bacWaterOutput.textContent = '-';
-            dosesPerVialOutput.textContent = '-';
-            concentrationOutput.textContent = '-';
-            warningMessage.style.display = 'none';
+            elements.outputs.bacWater.textContent = '-';
+            elements.outputs.dosesPerVial.textContent = '-';
+            elements.outputs.concentration.textContent = '-';
+            elements.outputs.warningMessage.style.display = 'none';
             return;
         }
 
         // Calculations
         const totalUnits = (vialQuantity / dose) * unitsPerDose;
-        const bacWater = totalUnits / 100; // 100 units = 1 ml
+        const bacWater = totalUnits / CONFIG.constants.unitsPerML;
         const dosesPerVial = vialQuantity / dose;
 
         // Display results
-        bacWaterOutput.textContent = `${bacWater.toFixed(2)} ml`;
-        dosesPerVialOutput.textContent = `${dosesPerVial.toFixed(1)} doses`;
+        elements.outputs.bacWater.textContent = `${bacWater.toFixed(2)} ml`;
+        elements.outputs.dosesPerVial.textContent = `${dosesPerVial.toFixed(1)} doses`;
 
         const concentration = vialQuantity / bacWater;
 
         // No automatic adjustment of units; we simply report high concentration
-
-        concentrationOutput.textContent = `${concentration.toFixed(2)} mg/ml`;
+        elements.outputs.concentration.textContent = `${concentration.toFixed(2)} mg/ml`;
 
         const resultItems = document.querySelectorAll('.result-item');
-        if (concentration > THRESHOLD_CONC) {
+        if (concentration > CONFIG.thresholdConcentration) {
             resultItems.forEach(item => item.classList.add('alert'));
-            warningMessage.style.display = 'block';
-            warningMessage.textContent = `Warning: Calculated concentration exceeds the recommended maximum of ${THRESHOLD_CONC} mg/ml.`;
+            elements.outputs.warningMessage.style.display = 'block';
+            elements.outputs.warningMessage.textContent = `Warning: Calculated concentration exceeds the recommended maximum of ${CONFIG.thresholdConcentration} mg/ml.`;
         } else {
             resultItems.forEach(item => item.classList.remove('alert'));
-            warningMessage.style.display = 'none';
+            elements.outputs.warningMessage.style.display = 'none';
         }
 
         updateLabelPreview();
     }
 
-    // Handle select change (show/hide custom input)
-    function handleVialSelectChange() {
-        if (vialQuantitySelect.value === 'custom') {
-            vialQuantityCustomInput.style.display = 'block';
-        } else {
-            vialQuantityCustomInput.style.display = 'none';
-            vialQuantityCustomInput.value = '';
-        }
-        calculateResults();
-    }
-
-    function handleDoseSelectChange() {
-        if (doseSelect.value === 'custom') {
-            doseCustomInput.style.display = 'block';
-        } else {
-            doseCustomInput.style.display = 'none';
-            doseCustomInput.value = '';
-        }
-        calculateResults();
-    }
-
-    function handleUnitsSelectChange() {
-        if (unitsSelect.value === 'custom') {
-            unitsCustomInput.style.display = 'block';
-        } else {
-            unitsCustomInput.style.display = 'none';
-            unitsCustomInput.value = '';
-        }
-        calculateResults();
-    }
-
     function updateLabelPreview() {
-        const label = labelInput.value || 'Peptide';
-        const url = urlInput.value || 'https://rickroll.it/rickroll.mp4';
+        const label = elements.labelElements.labelInput.value || 'Peptide';
+        const url = elements.labelElements.urlInput.value || CONFIG.constants.defaultRickrollURL;
 
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
-        const concentration = parseFloat(concentrationOutput.textContent);
-        let dose;
-        if (doseSelect.value === 'custom') {
-            dose = parseFloat(doseCustomInput.value);
-        } else {
-            dose = parseFloat(doseSelect.value);
-        }
-        const units = parseFloat(unitsSelect.value);
+        const concentration = parseFloat(elements.outputs.concentration.textContent);
+        
+        const dose = getValueFromSelectOrCustom(
+            dropdowns.dose.selectElement, 
+            dropdowns.dose.customInput
+        );
+        
+        const units = getValueFromSelectOrCustom(
+            dropdowns.units.selectElement, 
+            dropdowns.units.customInput
+        );
 
-        labelPreview.innerHTML = `
+        elements.labelElements.labelPreview.innerHTML = `
             <img src="${qrCodeUrl}" alt="QR Code">
             <div class="text">
                 <p>${label}</p>
@@ -137,19 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
     }
-
-    // Event listeners
-    vialQuantitySelect.addEventListener('change', handleVialSelectChange);
-    vialQuantityCustomInput.addEventListener('input', calculateResults);
-    doseSelect.addEventListener('change', handleDoseSelectChange);
-    doseCustomInput.addEventListener('input', calculateResults);
-    unitsSelect.addEventListener('change', handleUnitsSelectChange);
-    unitsCustomInput.addEventListener('input', calculateResults);
-    labelInput.addEventListener('input', updateLabelPreview);
-    urlInput.addEventListener('input', updateLabelPreview);
-
-    // Initial calculation
-    calculateResults();
 
     // Add buttons to download the label as an image
     const downloadButtonsDiv = document.createElement('div');
@@ -160,13 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadSVGButton.addEventListener('click', () => downloadLabel('svg'));
     downloadButtonsDiv.appendChild(downloadSVGButton);
 
-    labelPreview.parentNode.appendChild(downloadButtonsDiv);
+    elements.labelElements.labelPreview.parentNode.appendChild(downloadButtonsDiv);
     
     // Get the PNG preview container
-    const pngPreviewContainer = document.querySelector('#pngPreview .preview-container');
+    const pngPreviewContainer = elements.labelElements.pngPreviewContainer;
 
     function downloadLabel(format) {
-        const qrImage = labelPreview.querySelector('img');
+        const qrImage = elements.labelElements.labelPreview.querySelector('img');
         if (qrImage) {
             if (qrImage.complete) {
                 if (format === 'svg') {
@@ -192,18 +263,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Update label preview when any input changes
-    labelInput.addEventListener('input', () => {
+    elements.labelElements.labelInput.addEventListener('input', () => {
         updateLabelPreview();
         updatePNGPreview();
     });
-    urlInput.addEventListener('input', () => {
+    elements.labelElements.urlInput.addEventListener('input', () => {
         updateLabelPreview();
         updatePNGPreview();
     });
     
     // Initial PNG preview
     function updatePNGPreview() {
-        const qrImage = labelPreview.querySelector('img');
+        const qrImage = elements.labelElements.labelPreview.querySelector('img');
         if (qrImage && qrImage.complete) {
             renderPNG(false);
         } else if (qrImage) {
@@ -212,23 +283,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Call updatePNGPreview whenever calculator values change
-    vialQuantitySelect.addEventListener('change', updatePNGPreview);
-    vialQuantityCustomInput.addEventListener('input', updatePNGPreview);
-    doseSelect.addEventListener('change', updatePNGPreview);
-    doseCustomInput.addEventListener('input', updatePNGPreview);
-    unitsSelect.addEventListener('change', updatePNGPreview);
-    unitsCustomInput.addEventListener('input', updatePNGPreview);
+    Object.values(elements.selects).forEach(select => select.addEventListener('change', updatePNGPreview));
+    Object.values(elements.customInputs).forEach(input => input.addEventListener('input', updatePNGPreview));
     
     // Initial preview after page load
     setTimeout(updatePNGPreview, 500);
 
     function generateSVG() {
-        const qrImage = labelPreview.querySelector('img');
+        const qrImage = elements.labelElements.labelPreview.querySelector('img');
         const svgNS = "http://www.w3.org/2000/svg";
         const svg = document.createElementNS(svgNS, "svg");
         
         // Use same dimensions as PNG - 10mm height and max 50mm width
-        const targetHeightMm = 10;
+        const targetHeightMm = CONFIG.constants.labelHeight;
         const targetHeightPixels = Math.round((targetHeightMm / 25.4) * 96);
         const qrSizePixels = targetHeightPixels;
         
@@ -239,14 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.font = `${fontSize}px sans-serif`;
         
         // Get text values
-        const label = labelInput.value || 'Peptide';
-        const concentration = Math.round(parseFloat(concentrationOutput.textContent));
-        const doseValue = doseSelect.value === 'custom' 
-            ? doseCustomInput.value 
-            : doseSelect.value;
-        const unitValue = unitsSelect.value === 'custom'
-            ? unitsCustomInput.value
-            : unitsSelect.value;
+        const label = elements.labelElements.labelInput.value || 'Peptide';
+        const concentration = Math.round(parseFloat(elements.outputs.concentration.textContent));
+        const doseValue = getValueFromSelectOrCustom(
+            dropdowns.dose.selectElement, 
+            dropdowns.dose.customInput
+        );
+        const unitValue = getValueFromSelectOrCustom(
+            dropdowns.units.selectElement, 
+            dropdowns.units.customInput
+        );
         
         // Create the three lines of text
         const text1Content = `${label}`;
@@ -260,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxTextWidth = Math.max(text1Width, text2Width, text3Width);
         
         // Set max width to 50mm
-        const maxWidthMm = 50;
+        const maxWidthMm = CONFIG.constants.labelMaxWidth;
         const maxWidthPixels = (maxWidthMm / 25.4) * 96;
         const textWidthToUse = Math.min(maxTextWidth, maxWidthPixels - qrSizePixels - 15); // Account for QR and padding
         
@@ -312,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function renderPNG(shouldDownload) {
-        const qrImage = labelPreview.querySelector('img');
+        const qrImage = elements.labelElements.labelPreview.querySelector('img');
         
         // Create a new image to preload the QR code
         const img = new Image();
@@ -323,17 +392,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const ctx = canvas.getContext('2d');
             
             // Scale factor for higher resolution
-            const scaleFactor = 3;
+            const scaleFactor = CONFIG.constants.scaleFactor;
              
             // Get text values
-            const label = labelInput.value || 'Peptide';
-            const concentration = Math.round(parseFloat(concentrationOutput.textContent));
-            const doseValue = doseSelect.value === 'custom' 
-                ? doseCustomInput.value 
-                : doseSelect.value;
-            const unitValue = unitsSelect.value === 'custom'
-                ? unitsCustomInput.value
-                : unitsSelect.value;
+            const label = elements.labelElements.labelInput.value || 'Peptide';
+            const concentration = Math.round(parseFloat(elements.outputs.concentration.textContent));
+            const doseValue = getValueFromSelectOrCustom(
+                dropdowns.dose.selectElement, 
+                dropdowns.dose.customInput
+            );
+            const unitValue = getValueFromSelectOrCustom(
+                dropdowns.units.selectElement, 
+                dropdowns.units.customInput
+            );
             
             // Create the three lines of text
             const text1 = `${label}`;
@@ -343,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Calculate font size based on fixed height of 10mm
             // 10mm = 0.3937 inches, at 96dpi that's ~38px
             // QR code and text need to fit in 10mm height
-            const targetHeightMm = 10;
+            const targetHeightMm = CONFIG.constants.labelHeight;
             const targetHeightPixels = (targetHeightMm / 25.4) * 96;
             
             // Font size needs to be proportionally smaller to fit 3 lines in ~2/3 of the height
@@ -357,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxTextWidth = Math.max(text1Width, text2Width, text3Width);
             
             // Set maximum width to 50mm
-            const maxWidthMm = 50;
+            const maxWidthMm = CONFIG.constants.labelMaxWidth;
             const maxWidthPixels = (maxWidthMm / 25.4) * 96 / scaleFactor;
             
             // Set canvas dimensions - QR code width + padding + text width + right margin
@@ -398,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillText(text3, (qrSizePixels + 5) * scaleFactor, (centerY + lineSpacing - 2 + fontHeightOffset) * scaleFactor);
             
             // Update preview
-            pngPreviewContainer.innerHTML = '';
+            elements.labelElements.pngPreviewContainer.innerHTML = '';
             const previewImg = document.createElement('img');
             previewImg.src = canvas.toDataURL('image/png', 1.0);
             previewImg.style.cursor = 'pointer';
@@ -408,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.document.write(`<html><head><title>Label</title></head><body style="display:flex;justify-content:center;align-items:center;margin:0;background:#f5f5f5;"><img src="${this.src}" style="max-width:100%;"></body></html>`);
                 tab.document.close();
             });
-            pngPreviewContainer.appendChild(previewImg);
+            elements.labelElements.pngPreviewContainer.appendChild(previewImg);
             
             // Download if requested
             if (shouldDownload) {
