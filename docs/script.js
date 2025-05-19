@@ -58,8 +58,155 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Store the shortened URL
+    // Store the shortened URL and flag to determine which URL to use
     let shortenedUrl = '';
+    let useShortUrl = false;
+    
+    // Initialize elements
+    createUseShortUrlButton();
+    
+    // Function to create the "Use Short URL" button
+    function createUseShortUrlButton() {
+        // Create the button container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'shortened-url-display';
+        
+        // Create the "Use Short URL" button
+        const useShortUrlButton = document.createElement('button');
+        useShortUrlButton.id = 'useShortUrlButton';
+        useShortUrlButton.className = 'toggle-button';
+        useShortUrlButton.textContent = 'Use Short URL';
+        
+        // Add the button to the container
+        buttonContainer.appendChild(useShortUrlButton);
+        
+        // Add the container to the page
+        elements.labelElements.shortenedUrlDisplay.appendChild(buttonContainer);
+        
+        // Add event listener to the button
+        useShortUrlButton.addEventListener('click', handleUseShortUrlClick);
+    }
+    
+    // Function to handle "Use Short URL" button click
+    function handleUseShortUrlClick() {
+        const useShortUrlButton = document.getElementById('useShortUrlButton');
+        
+        // If we already have a shortened URL, just toggle between short and original
+        if (shortenedUrl) {
+            useShortUrl = !useShortUrl;
+            updateUseShortUrlButton();
+            generateLabels();
+            return;
+        }
+        
+        // Otherwise, we need to shorten the URL first
+        const url = elements.labelElements.urlInput.value.trim();
+        
+        // Only attempt to shorten if there's a valid URL
+        if (url && url.length > 0 && isValidUrl(url)) {
+            // Show loading state
+            useShortUrlButton.disabled = true;
+            useShortUrlButton.textContent = 'Shortening...';
+            
+            // Remove any existing URL display or error message
+            removeExistingDisplayElements();
+            
+            // Call is.gd API (via a cors proxy to avoid CORS issues)
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.contents && data.contents.startsWith('https://is.gd/')) {
+                        // Store the shortened URL
+                        shortenedUrl = data.contents;
+                        
+                        // Display the shortened URL below the button
+                        const urlDisplaySpan = document.createElement('div');
+                        urlDisplaySpan.className = 'shortened-url-info';
+                        urlDisplaySpan.innerHTML = `Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a>`;
+                        
+                        // Add the URL display after the button container
+                        const buttonContainer = useShortUrlButton.parentElement;
+                        buttonContainer.parentElement.appendChild(urlDisplaySpan);
+                        
+                        // Enable short URL
+                        useShortUrl = true;
+                        
+                        // Update the button
+                        updateUseShortUrlButton();
+                        
+                        // Generate labels with the short URL
+                        generateLabels();
+                    } else {
+                        throw new Error('Invalid response from shortener service');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error shortening URL:', error);
+                    
+                    // Show error message below the button
+                    const errorSpan = document.createElement('div');
+                    errorSpan.textContent = 'Could not shorten URL';
+                    errorSpan.className = 'error-message';
+                    
+                    // Add the error message after the button container
+                    const buttonContainer = useShortUrlButton.parentElement;
+                    buttonContainer.parentElement.appendChild(errorSpan);
+                    
+                    // Reset the button
+                    useShortUrl = false;
+                    shortenedUrl = '';
+                    updateUseShortUrlButton();
+                });
+        } else {
+            // Show error for invalid URL below the button
+            const errorSpan = document.createElement('div');
+            errorSpan.textContent = 'Please enter a valid URL first';
+            errorSpan.className = 'error-message';
+            
+            // Remove any existing URL display or error message
+            removeExistingDisplayElements();
+            
+            // Add the error message after the button container
+            const buttonContainer = useShortUrlButton.parentElement;
+            buttonContainer.parentElement.appendChild(errorSpan);
+        }
+    }
+    
+    // Function to remove existing URL display or error messages
+    function removeExistingDisplayElements() {
+        const shortenedUrlDisplay = elements.labelElements.shortenedUrlDisplay;
+        const existingInfo = shortenedUrlDisplay.querySelector('.shortened-url-info');
+        const existingError = shortenedUrlDisplay.querySelector('.error-message');
+        
+        if (existingInfo) {
+            shortenedUrlDisplay.removeChild(existingInfo);
+        }
+        
+        if (existingError) {
+            shortenedUrlDisplay.removeChild(existingError);
+        }
+    }
+    
+    // Function to update the "Use Short URL" button state
+    function updateUseShortUrlButton() {
+        const button = document.getElementById('useShortUrlButton');
+        if (!button) return;
+        
+        if (useShortUrl) {
+            button.classList.add('active');
+            button.textContent = 'Using Short URL';
+        } else {
+            button.classList.remove('active');
+            button.textContent = 'Use Short URL';
+        }
+        
+        button.disabled = false;
+    }
 
     // Initialize dropdowns and inputs
     function initializeDropdown(config) {
@@ -206,9 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get the label content values
         const label = elements.labelElements.labelInput.value || 'Peptide';
         
-        // Use shortened URL if available, otherwise use original URL
+        // Determine which URL to use
         let url = elements.labelElements.urlInput.value || CONFIG.constants.defaultRickrollURL;
-        if (shortenedUrl) {
+        if (useShortUrl && shortenedUrl) {
             url = shortenedUrl;
         }
         
@@ -303,8 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Function to create a label image with barcode and text
     function createLabelImage(barcodeImg, container, label, concentration, formattedDate, dose, units, codeType) {
-        // Clear the container
+        // Clear the container but preserve the heading
+        const heading = container.querySelector('h4');
         container.innerHTML = '';
+        if (heading) {
+            container.appendChild(heading);
+        }
         
         // Get dimensions
         const targetHeightMm = CONFIG.constants.labelHeight;
@@ -386,7 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create the final image
         const labelImg = document.createElement('img');
         labelImg.src = canvas.toDataURL('image/png', 1.0);
-        labelImg.title = `Click to download ${codeType} label`;
         labelImg.style.cursor = 'pointer';
         
         // Add click event to download the image
@@ -397,16 +547,32 @@ document.addEventListener('DOMContentLoaded', () => {
             link.click();
         });
         
-        // Add to container
-        container.appendChild(labelImg);
+        // Create container for image and description
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'image-container';
+        
+        // Create description paragraph
+        const description = document.createElement('p');
+        description.className = 'code-description';
+        description.textContent = getDescriptionForCodeType(codeType);
+        
+        // Add image and description to the container
+        imageContainer.appendChild(labelImg);
+        imageContainer.appendChild(description);
+        
+        // Add to main container
+        container.appendChild(imageContainer);
+    }
+    
+    // Function to get the description text for each code type
+    function getDescriptionForCodeType(codeType) {
+        if (codeType === 'QR') {
+            return 'Universally compatible with all smartphone cameras. Both iPhone and Android can scan directly.';
+        } else {
+            return 'More compact, can be printed smaller. Requires specialized apps on iPhone, some Android phones support natively.';
+        }
     }
 
-    // Update labels when input changes
-    elements.labelElements.labelInput.addEventListener('input', generateLabels);
-    elements.labelElements.dateInput.addEventListener('change', generateLabels);
-    elements.labelElements.urlInput.addEventListener('change', shortenUrl);
-    elements.labelElements.urlInput.addEventListener('blur', shortenUrl);
-    
     // Set default date to today
     (function setDefaultDate() {
         const today = new Date();
@@ -414,12 +580,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         elements.labelElements.dateInput.value = `${year}-${month}-${day}`;
-        
-        // Try to shorten URL if there's one in the input field initially
-        if (elements.labelElements.urlInput.value) {
-            shortenUrl();
-        }
     })();
+
+    // Add event listeners
+    elements.labelElements.labelInput.addEventListener('input', generateLabels);
+    elements.labelElements.dateInput.addEventListener('change', generateLabels);
+    elements.labelElements.urlInput.addEventListener('input', handleUrlChange);
+    
+    // Function to handle URL input changes
+    function handleUrlChange() {
+        // Reset short URL state if the URL input changes
+        if (shortenedUrl) {
+            shortenedUrl = '';
+            useShortUrl = false;
+            updateUseShortUrlButton();
+            removeExistingDisplayElements();
+        }
+        
+        // Generate new labels with the original URL
+        generateLabels();
+    }
 
     // Function to validate URL
     function isValidUrl(string) {
@@ -428,53 +608,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         } catch (_) {
             return false;
-        }
-    }
-    
-    // Function to shorten URL using is.gd API
-    function shortenUrl() {
-        const url = elements.labelElements.urlInput.value.trim();
-        
-        // Only attempt to shorten if there's a valid URL
-        if (url && url.length > 0 && isValidUrl(url)) {
-            // Show loading indicator
-            elements.labelElements.shortenedUrlDisplay.innerHTML = 'Shortening URL...';
-            
-            // Call is.gd API (via a cors proxy to avoid CORS issues)
-            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.contents && data.contents.startsWith('https://is.gd/')) {
-                        // Store the shortened URL
-                        shortenedUrl = data.contents;
-                        
-                        // Display the shortened URL
-                        elements.labelElements.shortenedUrlDisplay.innerHTML = `
-                            Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a>
-                        `;
-                        
-                        // Generate labels with the shortened URL
-                        generateLabels();
-                    } else {
-                        throw new Error('Invalid response from shortener service');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error shortening URL:', error);
-                    elements.labelElements.shortenedUrlDisplay.innerHTML = 'Could not shorten URL - using original URL';
-                    shortenedUrl = '';
-                    generateLabels();
-                });
-        } else {
-            // Clear the shortened URL display if there's no valid URL
-            elements.labelElements.shortenedUrlDisplay.innerHTML = '';
-            shortenedUrl = '';
-            generateLabels();
         }
     }
 });
