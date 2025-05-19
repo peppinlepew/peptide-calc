@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
             labelHeight: 10, // mm
             labelMaxWidth: 50, // mm
             scaleFactor: 3, // For higher resolution PNG
-            defaultRickrollURL: 'https://rickroll.it/rickroll.mp4'
+            // defaultRickrollURL: 'https://rickroll.it/rickroll.mp4',
+            defaultRickrollURL: 'https://is.gd/vXpyxu(base)'
         }
     };
 
@@ -359,14 +360,24 @@ document.addEventListener('DOMContentLoaded', () => {
             url = shortenedUrl;
         }
         
-        // Format date as MMDDYY if provided
+        // Format date as MMDDYY - use today's date by default
         const dateInput = elements.labelElements.dateInput.value;
         let formattedDate = '';
+        
         if (dateInput) {
-            const date = new Date(dateInput);
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const year = String(date.getFullYear()).slice(-2);
+            // The date input value is in YYYY-MM-DD format, parse it manually to avoid timezone issues
+            const [year, month, day] = dateInput.split('-');
+            const twoDigitYear = year.slice(-2);
+            // Use padStart to ensure 2 digits for month and day
+            const paddedMonth = month.padStart(2, '0');
+            const paddedDay = day.padStart(2, '0');
+            formattedDate = `${paddedMonth}${paddedDay}${twoDigitYear}`;
+        } else {
+            // If no date is selected, use today's date
+            const today = new Date();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const year = String(today.getFullYear()).slice(-2);
             formattedDate = `${month}${day}${year}`;
         }
         
