@@ -68,7 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
             urlInput: document.getElementById('urlInput'),
             shortenedUrlDisplay: document.getElementById('shortenedUrlDisplay'),
             qrLabelContainer: document.querySelector('.label-container.qr-label'),
-            datamatrixLabelContainer: document.querySelector('.label-container.datamatrix-label')
+            datamatrixLabelContainer: document.querySelector('.label-container.datamatrix-label'),
+            unreconQrLabelContainer: document.querySelector('.label-container.unrecon-qr-label'),
+            unreconDatamatrixLabelContainer: document.querySelector('.label-container.unrecon-datamatrix-label')
         }
     };
 
@@ -401,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Format date as MMDDYY - use today's date by default
         const dateInput = elements.labelElements.dateInput.value;
         let formattedDate = '';
+        let fullFormattedDate = '';
         
         if (dateInput) {
             // The date input value is in YYYY-MM-DD format, parse it manually to avoid timezone issues
@@ -410,13 +413,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const paddedMonth = month.padStart(2, '0');
             const paddedDay = day.padStart(2, '0');
             formattedDate = `${paddedMonth}${paddedDay}${twoDigitYear}`;
+            
+            // Create full date format for un-reconstituted vials
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            fullFormattedDate = `${monthNames[parseInt(month) - 1]} ${parseInt(paddedDay)}, ${year}`;
         } else {
             // If no date is selected, use today's date
             const today = new Date();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             const year = String(today.getFullYear()).slice(-2);
+            const fullYear = today.getFullYear();
             formattedDate = `${month}${day}${year}`;
+            
+            // Create full date format for un-reconstituted vials
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            fullFormattedDate = `${monthNames[today.getMonth()]} ${today.getDate()}, ${fullYear}`;
         }
         
         const concentration = parseFloat(elements.outputs.concentration.textContent);
@@ -430,7 +442,21 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdowns.units.selectElement, 
             dropdowns.units.customInput
         );
+        
+        const vialQuantity = getValueFromSelectOrCustom(
+            dropdowns.vialQuantity.selectElement, 
+            dropdowns.vialQuantity.customInput
+        );
 
+        // Generate Reconstituted Vial Labels (QR and DataMatrix)
+        generateReconstitutedLabels(url, label, concentration, formattedDate, dose, units);
+        
+        // Generate Un-reconstituted Vial Labels (QR and DataMatrix)
+        generateUnreconstitutedLabels(url, label, fullFormattedDate, vialQuantity);
+    }
+    
+    // Function to generate reconstituted vial labels
+    function generateReconstitutedLabels(url, label, concentration, formattedDate, dose, units) {
         // Generate QR code label
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
         const qrCodeImg = new Image();
@@ -440,10 +466,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 qrCodeImg, 
                 elements.labelElements.qrLabelContainer, 
                 label, 
-                concentration, 
-                formattedDate, 
-                dose, 
-                units, 
+                concentration.toFixed(1) + " mg/ml", 
+                formattedDate ? '|' + formattedDate : '', 
+                `${units}units = ${dose}mg`, 
                 'QR'
             );
         };
@@ -482,10 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     dataMatrixImg, 
                     elements.labelElements.datamatrixLabelContainer, 
                     label, 
-                    concentration, 
-                    formattedDate, 
-                    dose, 
-                    units, 
+                    concentration.toFixed(1) + " mg/ml", 
+                    formattedDate ? '|' + formattedDate : '', 
+                    `${units}units = ${dose}mg`, 
                     'DataMatrix'
                 );
             };
@@ -497,8 +521,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Function to generate un-reconstituted vial labels
+    function generateUnreconstitutedLabels(url, label, fullFormattedDate, vialQuantity) {
+        // Generate QR code label
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        const qrCodeImg = new Image();
+        qrCodeImg.crossOrigin = "Anonymous";
+        qrCodeImg.onload = function() {
+            createLabelImage(
+                qrCodeImg, 
+                elements.labelElements.unreconQrLabelContainer, 
+                label, 
+                fullFormattedDate, 
+                '', 
+                `Total: ${vialQuantity}mg`, 
+                'unrecon-QR'
+            );
+        };
+        qrCodeImg.onerror = function() {
+            elements.labelElements.unreconQrLabelContainer.innerHTML = 
+                `<div class="error-message">Could not load QR code</div>`;
+        };
+        qrCodeImg.src = qrCodeUrl;
+        
+        // Generate Data Matrix code label
+        const canvas = document.getElementById('dataMatrixCanvas');
+        try {
+            // Set canvas dimensions
+            canvas.width = 150;
+            canvas.height = 150;
+            
+            // Clear previous content
+            const context = canvas.getContext('2d', { willReadFrequently: true });
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Generate Data Matrix code
+            bwipjs.toCanvas(canvas, {
+                bcid: 'datamatrix',         // Barcode type
+                text: url,                  // Text to encode
+                scale: 3,                   // 3x scaling factor
+                height: 50,                 // Bar height (overridden by scale)
+                includetext: false,         // Show human-readable text
+                textxalign: 'center',       // Text alignment
+                backgroundcolor: 'FFFFFF'   // White background
+            });
+            
+            // Get image from canvas
+            const dataMatrixImg = new Image();
+            dataMatrixImg.onload = function() {
+                createLabelImage(
+                    dataMatrixImg, 
+                    elements.labelElements.unreconDatamatrixLabelContainer, 
+                    label, 
+                    fullFormattedDate, 
+                    '', 
+                    `Total: ${vialQuantity}mg`, 
+                    'unrecon-DataMatrix'
+                );
+            };
+            dataMatrixImg.src = canvas.toDataURL('image/png');
+        } catch (e) {
+            console.error("Error generating Data Matrix code:", e);
+            elements.labelElements.unreconDatamatrixLabelContainer.innerHTML = 
+                `<div class="error-message">Could not generate Data Matrix code</div>`;
+        }
+    }
+    
     // Function to create a label image with barcode and text
-    function createLabelImage(barcodeImg, container, label, concentration, formattedDate, dose, units, codeType) {
+    function createLabelImage(barcodeImg, container, line1, line2, line2Suffix, line3, codeType) {
         // Clear the container but preserve the heading
         const heading = container.querySelector('h4');
         container.innerHTML = '';
@@ -523,9 +613,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const fontSize = Math.floor((baseHeightPx / 3) * 0.9);
         
         // Prepare the three lines of text
-        const text1 = label;
-        const text2 = `${concentration.toFixed(1)} mg/ml${formattedDate ? '|' + formattedDate : ''}`;
-        const text3 = `${units}units = ${dose}mg`;
+        const text1 = line1;
+        const text2 = line2 + line2Suffix;
+        const text3 = line3;
         
         // Set up text for measuring - now all lines use the same font size
         ctx.font = `${fontSize * scaleFactor}px monospace`;
@@ -548,11 +638,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set canvas dimensions (scaled up for better quality)
         canvas.width = Math.floor(baseWidth * scaleFactor);
         canvas.height = Math.floor(baseHeightPx * scaleFactor);
-        
+            
         // Fill background
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+            
         // Ensure crisp rendering
         ctx.imageSmoothingEnabled = false;
         
