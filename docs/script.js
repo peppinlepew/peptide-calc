@@ -585,6 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const savedPeptideType = localStorage.getItem(CONFIG.storageKeys.peptideType);
             if (savedPeptideType && CONFIG.peptideTypes[savedPeptideType]) {
                 CONFIG.activePeptideType = savedPeptideType;
+                // Update button styles for the saved type
+                document.querySelectorAll('.peptide-type-button').forEach(button => {
+                    const isActive = button.dataset.type === savedPeptideType;
+                    button.style.backgroundColor = isActive ? '#4a90e2' : '#f0f0f0';
+                    button.style.color = isActive ? 'white' : '#333';
+                });
             }
             
             // Ensure dropdowns are initialized before proceeding
