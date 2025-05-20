@@ -17,7 +17,7 @@ A web-based calculator for determining the amount of BAC water required for pept
 
 ## GitHub Pages
 
-This project is hosted on GitHub Pages at [peppinlepew.github.io/peptide-calculator](https://peppinlepew.github.io/peptide-calculator).
+This project is hosted on GitHub Pages at [peppinlepew.github.io/peptide-calc](https://peppinlepew.github.io/peptide-calc).
 
 ### Setting Up GitHub Pages
 
