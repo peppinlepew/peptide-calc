@@ -453,6 +453,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Generate Un-reconstituted Vial Labels (QR and DataMatrix)
         generateUnreconstitutedLabels(url, label, fullFormattedDate, vialQuantity);
+        
+        // Add code type explanations
+        addCodeTypeExplanations();
     }
     
     // Function to generate reconstituted vial labels
@@ -706,30 +709,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Create container for image and description
+        // Create container for image (without description)
         const imageContainer = document.createElement('div');
         imageContainer.className = 'image-container';
         
-        // Create description paragraph
-        const description = document.createElement('p');
-        description.className = 'code-description';
-        description.textContent = getDescriptionForCodeType(codeType);
-        
-        // Add image and description to the container
+        // Add image to the container
         imageContainer.appendChild(labelImg);
-        imageContainer.appendChild(description);
         
         // Add to main container
         container.appendChild(imageContainer);
     }
     
-    // Function to get the description text for each code type
-    function getDescriptionForCodeType(codeType) {
-        if (codeType === 'QR') {
-            return 'Universally compatible with all smartphone cameras. Both iPhone and Android can scan directly.';
-        } else {
-            return 'More compact, can be printed smaller. Requires specialized apps on iPhone, some Android phones support natively.';
+    // Function to add code type explanations after all labels
+    function addCodeTypeExplanations() {
+        // Check if notes already exist
+        if (document.getElementById('code-type-notes')) {
+            return;
         }
+        
+        // Create notes container
+        const notesContainer = document.createElement('div');
+        notesContainer.id = 'code-type-notes';
+        notesContainer.className = 'code-type-notes';
+        notesContainer.style.margin = '2rem 0';
+        notesContainer.style.padding = '1rem';
+        notesContainer.style.backgroundColor = '#f9f9f9';
+        notesContainer.style.borderRadius = '8px';
+        
+        // Create heading
+        const heading = document.createElement('h4');
+        heading.textContent = 'About Code Types';
+        heading.style.marginTop = '0';
+        notesContainer.appendChild(heading);
+        
+        // Create QR code description
+        const qrDescription = document.createElement('p');
+        qrDescription.innerHTML = '<strong>QR Codes:</strong> Universally compatible with all smartphone cameras. Both iPhone and Android can scan directly without special apps.';
+        notesContainer.appendChild(qrDescription);
+        
+        // Create Data Matrix description
+        const dataMatrixDescription = document.createElement('p');
+        dataMatrixDescription.innerHTML = '<strong>Data Matrix Codes:</strong> More compact, can be printed smaller. Requires specialized apps on iPhone, some Android phones support natively.';
+        notesContainer.appendChild(dataMatrixDescription);
+        
+        // Add the notes after the labels container
+        const labelsContainer = document.getElementById('labels-container');
+        labelsContainer.parentNode.insertBefore(notesContainer, labelsContainer.nextSibling);
     }
 
     // Set default date to today
