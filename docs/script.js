@@ -365,13 +365,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const dosesPerVial = vialQuantity / dose;
 
         // Display results
-        elements.outputs.bacWater.textContent = `${bacWater.toFixed(2)} ml`;
+        elements.outputs.bacWater.textContent = `${bacWater.toFixed(1)} ml`;
         elements.outputs.dosesPerVial.textContent = `${dosesPerVial.toFixed(1)} doses`;
 
         const concentration = vialQuantity / bacWater;
 
         // No automatic adjustment of units; we simply report high concentration
-        elements.outputs.concentration.textContent = `${concentration.toFixed(2)}mg/ml`;
+        elements.outputs.concentration.textContent = `${concentration.toFixed(1)}mg/ml`;
 
         const resultItems = document.querySelectorAll('.result-item');
         if (concentration > CONFIG.thresholdConcentration) {
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Prepare the three lines of text
         const text1 = label;
-        const text2 = `${Math.round(concentration)} mg/ml${formattedDate ? '|' + formattedDate : ''}`;
+        const text2 = `${concentration.toFixed(1)} mg/ml${formattedDate ? '|' + formattedDate : ''}`;
         const text3 = `${units}units = ${dose}mg`;
         
         // Set up text for measuring - now all lines use the same font size
