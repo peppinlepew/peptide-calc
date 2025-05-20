@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
             scaleFactor: 3, // For higher resolution PNG
             // defaultRickrollURL: 'https://rickroll.it/rickroll.mp4',
             defaultRickrollURL: 'https://is.gd/vXpyxu(base)'
+        },
+        // Storage keys for localStorage
+        storageKeys: {
+            vialQuantity: 'peptideCalc_vialQuantity',
+            vialQuantityCustom: 'peptideCalc_vialQuantityCustom',
+            dose: 'peptideCalc_dose',
+            doseCustom: 'peptideCalc_doseCustom',
+            units: 'peptideCalc_units',
+            unitsCustom: 'peptideCalc_unitsCustom',
+            label: 'peptideCalc_label',
+            url: 'peptideCalc_url',
+            shortenedUrl: 'peptideCalc_shortenedUrl',
+            useShortUrl: 'peptideCalc_useShortUrl'
         }
     };
 
@@ -97,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             useShortUrl = !useShortUrl;
             updateUseShortUrlButton();
             generateLabels();
+            saveSettings(); // Save the useShortUrl state
             return;
         }
         
@@ -112,6 +126,26 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove any existing URL display or error message
             removeExistingDisplayElements();
             
+            // Check if we have a cached shortened URL for this exact URL
+            const cachedShortenedUrl = localStorage.getItem(CONFIG.storageKeys.shortenedUrl);
+            const cachedForUrl = localStorage.getItem(CONFIG.storageKeys.url);
+            
+            if (cachedShortenedUrl && cachedForUrl === url) {
+                // Use cached shortened URL
+                shortenedUrl = cachedShortenedUrl;
+                useShortUrl = true;
+                
+                // Display the shortened URL
+                displayShortenedUrl(shortenedUrl);
+                
+                // Update button state
+                updateUseShortUrlButton();
+                
+                // Generate labels with the short URL
+                generateLabels();
+                return;
+            }
+            
             // Call is.gd API (via a cors proxy to avoid CORS issues)
             fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`)}`)
                 .then(response => {
@@ -125,20 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Store the shortened URL
                         shortenedUrl = data.contents;
                         
-                        // Display the shortened URL below the button
-                        const urlDisplaySpan = document.createElement('div');
-                        urlDisplaySpan.className = 'shortened-url-info';
-                        urlDisplaySpan.innerHTML = `Shortened URL: <a href="${shortenedUrl}" target="_blank">${shortenedUrl}</a>`;
-                        
-                        // Add the URL display after the button container
-                        const buttonContainer = useShortUrlButton.parentElement;
-                        buttonContainer.parentElement.appendChild(urlDisplaySpan);
+                        // Display the shortened URL
+                        displayShortenedUrl(shortenedUrl);
                         
                         // Enable short URL
                         useShortUrl = true;
                         
                         // Update the button
                         updateUseShortUrlButton();
+                        
+                        // Save the shortened URL and preference to localStorage
+                        saveSettings();
                         
                         // Generate labels with the short URL
                         generateLabels();
@@ -240,9 +271,13 @@ document.addEventListener('DOMContentLoaded', () => {
         selectElement.addEventListener('change', () => {
             handleCustomInputVisibility(selectElement, customInput);
             calculateResults();
+            saveSettings(); // Save settings when changed
         });
         
-        customInput.addEventListener('input', calculateResults);
+        customInput.addEventListener('input', () => {
+            calculateResults();
+            saveSettings(); // Save settings when changed
+        });
         
         return { selectElement, customInput };
     }
@@ -288,6 +323,9 @@ document.addEventListener('DOMContentLoaded', () => {
     Object.entries(CONFIG.dropdowns).forEach(([key, config]) => {
         dropdowns[key] = initializeDropdown(config);
     });
+
+    // Load saved settings or use defaults
+    loadSettings();
 
     // Initial calculation
     calculateResults();
@@ -614,9 +652,15 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
     // Add event listeners
-    elements.labelElements.labelInput.addEventListener('input', generateLabels);
+    elements.labelElements.labelInput.addEventListener('input', () => {
+        generateLabels();
+        saveSettings(); // Save settings when label changes
+    });
     elements.labelElements.dateInput.addEventListener('change', generateLabels);
-    elements.labelElements.urlInput.addEventListener('input', handleUrlChange);
+    elements.labelElements.urlInput.addEventListener('input', () => {
+        handleUrlChange();
+        saveSettings(); // Save settings when URL changes
+    });
     
     // Function to handle URL input changes
     function handleUrlChange() {
@@ -630,6 +674,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Generate new labels with the original URL
         generateLabels();
+        
+        // Save the new URL
+        saveSettings();
     }
 
     // Function to validate URL
@@ -639,6 +686,132 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         } catch (_) {
             return false;
+        }
+    }
+
+    // Function to display shortened URL
+    function displayShortenedUrl(url) {
+        // Display the shortened URL below the button
+        const urlDisplaySpan = document.createElement('div');
+        urlDisplaySpan.className = 'shortened-url-info';
+        urlDisplaySpan.innerHTML = `Shortened URL: <a href="${url}" target="_blank">${url}</a>`;
+        
+        // Add the URL display after the button container
+        const buttonContainer = document.getElementById('useShortUrlButton').parentElement;
+        buttonContainer.parentElement.appendChild(urlDisplaySpan);
+    }
+
+    // Function to save user settings to localStorage
+    function saveSettings() {
+        try {
+            // Save dropdown values
+            localStorage.setItem(CONFIG.storageKeys.vialQuantity, dropdowns.vialQuantity.selectElement.value);
+            localStorage.setItem(CONFIG.storageKeys.dose, dropdowns.dose.selectElement.value);
+            localStorage.setItem(CONFIG.storageKeys.units, dropdowns.units.selectElement.value);
+            
+            // Save custom input values if in custom mode
+            if (dropdowns.vialQuantity.selectElement.value === 'custom') {
+                localStorage.setItem(CONFIG.storageKeys.vialQuantityCustom, dropdowns.vialQuantity.customInput.value);
+            }
+            
+            if (dropdowns.dose.selectElement.value === 'custom') {
+                localStorage.setItem(CONFIG.storageKeys.doseCustom, dropdowns.dose.customInput.value);
+            }
+            
+            if (dropdowns.units.selectElement.value === 'custom') {
+                localStorage.setItem(CONFIG.storageKeys.unitsCustom, dropdowns.units.customInput.value);
+            }
+            
+            // Save label and URL inputs
+            localStorage.setItem(CONFIG.storageKeys.label, elements.labelElements.labelInput.value);
+            localStorage.setItem(CONFIG.storageKeys.url, elements.labelElements.urlInput.value);
+            
+            // Save shortened URL and useShortUrl preference
+            if (shortenedUrl) {
+                localStorage.setItem(CONFIG.storageKeys.shortenedUrl, shortenedUrl);
+                localStorage.setItem(CONFIG.storageKeys.useShortUrl, useShortUrl.toString());
+            }
+            
+            console.log('Settings saved to localStorage');
+        } catch (e) {
+            console.error('Failed to save settings:', e);
+        }
+    }
+    
+    // Function to load saved settings from localStorage
+    function loadSettings() {
+        try {
+            // Load vial quantity
+            const savedVialQuantity = localStorage.getItem(CONFIG.storageKeys.vialQuantity);
+            if (savedVialQuantity) {
+                dropdowns.vialQuantity.selectElement.value = savedVialQuantity;
+                if (savedVialQuantity === 'custom') {
+                    const customValue = localStorage.getItem(CONFIG.storageKeys.vialQuantityCustom);
+                    if (customValue) {
+                        dropdowns.vialQuantity.customInput.value = customValue;
+                        dropdowns.vialQuantity.customInput.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Load dose
+            const savedDose = localStorage.getItem(CONFIG.storageKeys.dose);
+            if (savedDose) {
+                dropdowns.dose.selectElement.value = savedDose;
+                if (savedDose === 'custom') {
+                    const customValue = localStorage.getItem(CONFIG.storageKeys.doseCustom);
+                    if (customValue) {
+                        dropdowns.dose.customInput.value = customValue;
+                        dropdowns.dose.customInput.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Load units
+            const savedUnits = localStorage.getItem(CONFIG.storageKeys.units);
+            if (savedUnits) {
+                dropdowns.units.selectElement.value = savedUnits;
+                if (savedUnits === 'custom') {
+                    const customValue = localStorage.getItem(CONFIG.storageKeys.unitsCustom);
+                    if (customValue) {
+                        dropdowns.units.customInput.value = customValue;
+                        dropdowns.units.customInput.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Load label and URL
+            const savedLabel = localStorage.getItem(CONFIG.storageKeys.label);
+            if (savedLabel) {
+                elements.labelElements.labelInput.value = savedLabel;
+            }
+            
+            const savedUrl = localStorage.getItem(CONFIG.storageKeys.url);
+            if (savedUrl) {
+                elements.labelElements.urlInput.value = savedUrl;
+                
+                // Check if we have a saved shortened URL for this URL
+                const savedShortenedUrl = localStorage.getItem(CONFIG.storageKeys.shortenedUrl);
+                if (savedShortenedUrl) {
+                    shortenedUrl = savedShortenedUrl;
+                    
+                    // Restore useShortUrl preference
+                    const savedUseShortUrl = localStorage.getItem(CONFIG.storageKeys.useShortUrl);
+                    if (savedUseShortUrl === 'true') {
+                        useShortUrl = true;
+                    }
+                    
+                    // Display the shortened URL
+                    displayShortenedUrl(shortenedUrl);
+                    
+                    // Update button state
+                    updateUseShortUrlButton();
+                }
+            }
+            
+            console.log('Settings loaded from localStorage');
+        } catch (e) {
+            console.error('Failed to load settings:', e);
         }
     }
 });
