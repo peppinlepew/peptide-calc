@@ -63,6 +63,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 customInputId: 'concentrationCustom',
                 suffix: "mg/ml",
                 customLabel: "Custom"
+            },
+            numVials: {
+                selectId: 'numVialsSelect',
+                customInputId: 'numVialsCustom',
+                values: [1, 2, 3, 4],
+                defaultValue: 1,
+                suffix: " vial",
+                suffixPlural: " vials",
+                customLabel: "Other"
             }
         },
         constants: {
@@ -82,6 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
             unitsCustom: 'peptideCalc_unitsCustom',
             concentration: 'peptideCalc_concentration',
             concentrationCustom: 'peptideCalc_concentrationCustom',
+            numVials: 'peptideCalc_numVials',
+            numVialsCustom: 'peptideCalc_numVialsCustom',
             label: 'peptideCalc_label',
             url: 'peptideCalc_url',
             shortenedUrl: 'peptideCalc_shortenedUrl',
@@ -103,8 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
             datamatrixLabelContainer: document.querySelector('.label-container.datamatrix-label'),
             unreconQrLabelContainer: document.querySelector('.label-container.unrecon-qr-label'),
             unreconDatamatrixLabelContainer: document.querySelector('.label-container.unrecon-datamatrix-label'),
-            bacWaterInput: document.getElementById('bacWaterInput'),
-            dosesPerVialInput: document.getElementById('dosesPerVialInput')
+            bacWaterPerVialInput: document.getElementById('bacWaterPerVialInput'),
+            bacWaterTotalInput: document.getElementById('bacWaterTotalInput'),
+            dosesPerLyophilizedVialInput: document.getElementById('dosesPerLyophilizedVialInput'),
+            dosesPerFinalVialInput: document.getElementById('dosesPerFinalVialInput'),
+            numVialsSelect: document.getElementById('numVialsSelect')
         }
     };
 
@@ -400,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Generic function to populate a dropdown
-    function populateDropdown(selectId, customInputId, values, defaultValue, suffix, customLabel) {
+    function populateDropdown(selectId, customInputId, values, defaultValue, suffix, customLabel, suffixPlural = null) {
         const selectElement = document.getElementById(selectId);
         const customInput = document.getElementById(customInputId);
         
@@ -423,7 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
         values.forEach(value => {
             const option = document.createElement('option');
             option.value = value.toString();
-            option.textContent = value + (suffix ? ` ${suffix}` : '');
+            const suffixToUse = suffixPlural && value > 1 ? suffixPlural : suffix;
+            option.textContent = value + (suffixToUse ? ` ${suffixToUse}` : '');
             
             // Check if this should be selected
             if (!shouldSelectCustom && currentValue === value.toString()) {
@@ -489,7 +504,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 config.values,
                 config.defaultValue,
                 config.suffix,
-                config.customLabel
+                config.customLabel,
+                config.suffixPlural
             );
         }
         
@@ -508,9 +524,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verify all required DOM elements exist
     function verifyDOMElements() {
         const requiredElements = {
-            labelElements: ['labelInput', 'dateInput', 'urlInput', 'shortenedUrlDisplay', 
-                          'qrLabelContainer', 'datamatrixLabelContainer', 
-                          'unreconQrLabelContainer', 'unreconDatamatrixLabelContainer']
+            labelElements: [
+                'labelInput', 'dateInput', 'urlInput', 'shortenedUrlDisplay', 
+                'qrLabelContainer', 'datamatrixLabelContainer', 
+                'unreconQrLabelContainer', 'unreconDatamatrixLabelContainer',
+                'bacWaterPerVialInput', 'bacWaterTotalInput',
+                'dosesPerLyophilizedVialInput', 'dosesPerFinalVialInput',
+                'numVialsSelect'
+            ]
         };
 
         // Check label elements
@@ -581,39 +602,41 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mark as initialized before loading settings
         isInitialized = true;
         
-        // Load saved settings - moved after all initialization
+        // Load saved settings
         loadSettings();
-        
-        // Calculate initial values
-        const vialQuantity = getValueFromSelectOrCustom(
-            dropdowns.vialQuantity.selectElement, 
-            dropdowns.vialQuantity.customInput
-        );
-        
-        const dose = getValueFromSelectOrCustom(
-            dropdowns.dose.selectElement, 
-            dropdowns.dose.customInput
-        );
 
-        const concentration = getValueFromSelectOrCustom(
+        // Add event listeners for all inputs
+        const inputs = [
+            dropdowns.vialQuantity.selectElement,
+            dropdowns.vialQuantity.customInput,
+            dropdowns.dose.selectElement,
+            dropdowns.dose.customInput,
             dropdowns.concentration.selectElement,
-            dropdowns.concentration.customInput
-        );
+            dropdowns.concentration.customInput,
+            dropdowns.units.selectElement,
+            dropdowns.units.customInput,
+            elements.labelElements.numVialsSelect
+        ];
 
-        // Calculate initial doses per vial
-        if (vialQuantity > 0 && dose > 0) {
-            const dosesPerVial = vialQuantity / dose;
-            elements.labelElements.dosesPerVialInput.value = dosesPerVial.toFixed(1);
+        inputs.forEach(input => {
+            if (input) {
+                input.addEventListener('change', () => {
+                    calculateResults();
+                    saveSettings();
+                });
+                if (input.type === 'text' || input.type === 'number') {
+                    input.addEventListener('input', () => {
+                        calculateResults();
+                        saveSettings();
+                    });
+                }
+            }
+        });
+
+        // Trigger initial calculation by simulating a change event on the first input
+        if (inputs[0]) {
+            inputs[0].dispatchEvent(new Event('change'));
         }
-
-        // Calculate initial BAC water
-        if (vialQuantity > 0 && concentration > 0) {
-            const bacWater = vialQuantity / concentration;
-            elements.labelElements.bacWaterInput.value = bacWater.toFixed(1);
-        }
-
-        // Make initial calculation
-        calculateResults();
     }
     
     // Function to load saved settings from localStorage
@@ -638,13 +661,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Ensure dropdowns are initialized before proceeding
-            if (!dropdowns || !dropdowns.vialQuantity || !dropdowns.dose || !dropdowns.units || !dropdowns.concentration) {
+            if (!dropdowns || !dropdowns.vialQuantity || !dropdowns.dose || !dropdowns.units || !dropdowns.concentration || !dropdowns.numVials) {
                 console.error('Dropdowns not initialized yet, skipping loading dropdown values');
                 return;
             }
 
             // Verify each dropdown is properly initialized
-            const requiredDropdowns = ['vialQuantity', 'dose', 'units', 'concentration'];
+            const requiredDropdowns = ['vialQuantity', 'dose', 'units', 'concentration', 'numVials'];
             for (const key of requiredDropdowns) {
                 if (!dropdowns[key] || !dropdowns[key].selectElement || !dropdowns[key].customInput) {
                     console.error(`Dropdown ${key} is not properly initialized`);
@@ -700,6 +723,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (customValue) {
                         dropdowns.concentration.customInput.value = customValue;
                         dropdowns.concentration.customInput.style.display = 'block';
+                    }
+                }
+            }
+
+            // Load number of vials
+            const savedNumVials = localStorage.getItem(CONFIG.storageKeys.numVials);
+            if (savedNumVials) {
+                dropdowns.numVials.selectElement.value = savedNumVials;
+                if (savedNumVials === 'custom') {
+                    const customValue = localStorage.getItem(CONFIG.storageKeys.numVialsCustom);
+                    if (customValue) {
+                        dropdowns.numVials.customInput.value = customValue;
+                        dropdowns.numVials.customInput.style.display = 'block';
                     }
                 }
             }
@@ -767,8 +803,10 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdowns.units.customInput
         );
 
-        const bacWater = parseFloat(elements.labelElements.bacWaterInput.value) || 0;
-        const dosesPerVial = parseFloat(elements.labelElements.dosesPerVialInput.value) || 0;
+        const numVials = getValueFromSelectOrCustom(
+            dropdowns.numVials.selectElement,
+            dropdowns.numVials.customInput
+        );
 
         // Validate required inputs
         if (isNaN(vialQuantity) || isNaN(dose) || vialQuantity <= 0 || dose <= 0) {
@@ -776,66 +814,47 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Determine which value was just changed by checking event target
-        const changedElement = document.activeElement;
-        let changedField = null;
+        // Calculate doses per vial (always calculate this)
+        const dosesPerVial = vialQuantity / dose;
+        elements.labelElements.dosesPerLyophilizedVialInput.value = dosesPerVial.toFixed(1);
+        elements.labelElements.dosesPerFinalVialInput.value = (dosesPerVial * numVials).toFixed(1);
 
-        if (changedElement === dropdowns.vialQuantity.selectElement || changedElement === dropdowns.vialQuantity.customInput) {
-            changedField = 'vialQuantity';
-        } else if (changedElement === dropdowns.dose.selectElement || changedElement === dropdowns.dose.customInput) {
-            changedField = 'dose';
-        } else if (changedElement === dropdowns.concentration.selectElement || changedElement === dropdowns.concentration.customInput) {
-            changedField = 'concentration';
-        } else if (changedElement === dropdowns.units.selectElement || changedElement === dropdowns.units.customInput) {
-            changedField = 'units';
+        // Calculate BAC water
+        let bacWaterPerVial;
+        let calculatedUnits;
+        if (concentration > 0) {
+            // Calculate BAC water based on concentration
+            bacWaterPerVial = vialQuantity / concentration;
+            // Calculate units based on concentration
+            calculatedUnits = (dose * CONFIG.constants.unitsPerML) / concentration;
+        } else if (units > 0) {
+            // Calculate BAC water based on units
+            const calculatedConcentration = (dose * CONFIG.constants.unitsPerML) / units;
+            bacWaterPerVial = vialQuantity / calculatedConcentration;
+            calculatedUnits = units;
         }
 
-        // Calculate other values based on what changed
-        if (changedField === 'vialQuantity' || changedField === 'dose') {
-            // Calculate doses per vial
-            const newDosesPerVial = vialQuantity / dose;
-            elements.labelElements.dosesPerVialInput.value = newDosesPerVial.toFixed(1);
+        if (bacWaterPerVial > 0) {
+            elements.labelElements.bacWaterPerVialInput.value = bacWaterPerVial.toFixed(1);
+            elements.labelElements.bacWaterTotalInput.value = (bacWaterPerVial * numVials).toFixed(1);
+            
+            // Update instruction amounts
+            document.getElementById('bacWaterAmount').textContent = (bacWaterPerVial * numVials).toFixed(1);
+            document.getElementById('bacWaterPerVialDisplay').textContent = bacWaterPerVial.toFixed(1);
+            document.getElementById('vialText').textContent = numVials > 1 ? 'each vial' : 'the vial';
+            
+            // Update summary values
+            document.getElementById('numVialsDisplay').textContent = numVials;
+            document.getElementById('peptidePerVialDisplay').textContent = vialQuantity.toFixed(1);
+            document.getElementById('totalPeptideDisplay').textContent = (vialQuantity * numVials).toFixed(1);
+            document.getElementById('bacWaterTotalDisplay').textContent = (bacWaterPerVial * numVials).toFixed(1);
+            document.getElementById('finalConcentrationDisplay').textContent = concentration > 0 ? 
+                concentration.toFixed(1) : 
+                ((dose * CONFIG.constants.unitsPerML) / units).toFixed(1);
 
-            // If we have concentration, calculate BAC water and units
-            if (concentration > 0) {
-                const newBacWater = vialQuantity / concentration;
-                elements.labelElements.bacWaterInput.value = newBacWater.toFixed(1);
-
-                // Calculate units based on dose and concentration
-                const newUnits = (dose * CONFIG.constants.unitsPerML) / concentration;
-                updateDropdownValue('units', newUnits);
-            }
-        } else if (changedField === 'concentration') {
-            // If concentration changed, calculate units and BAC water
-            if (concentration > 0) {
-                // Calculate BAC water
-                const newBacWater = vialQuantity / concentration;
-                elements.labelElements.bacWaterInput.value = newBacWater.toFixed(1);
-
-                // Calculate units based on concentration
-                // units = (dose * unitsPerML) / concentration
-                const newUnits = (dose * CONFIG.constants.unitsPerML) / concentration;
-                
-                // Update units dropdown/custom input
-                updateDropdownValue('units', newUnits);
-            }
-        } else if (changedField === 'units') {
-            // If units changed, calculate concentration, BAC water, and doses per vial
-            if (units > 0) {
-                // Calculate doses per vial
-                const newDosesPerVial = vialQuantity / dose;
-                elements.labelElements.dosesPerVialInput.value = newDosesPerVial.toFixed(1);
-
-                // Calculate concentration based on units
-                // concentration = (dose * unitsPerML) / units
-                const newConcentration = (dose * CONFIG.constants.unitsPerML) / units;
-                
-                // Update concentration dropdown/custom input
-                updateDropdownValue('concentration', newConcentration);
-
-                // Calculate BAC water based on new concentration
-                const newBacWater = vialQuantity / newConcentration;
-                elements.labelElements.bacWaterInput.value = newBacWater.toFixed(1);
+            // Update units dropdown if we calculated new units
+            if (calculatedUnits) {
+                updateDropdownValue('units', calculatedUnits);
             }
         }
 
@@ -844,14 +863,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const allInputGroups = document.querySelectorAll('.input-group');
         const warningMessage = document.getElementById('warningMessage');
         
-        if (typeConfig.thresholdConcentration <= 0) {
-            allInputGroups.forEach(item => item.classList.remove('alert'));
-            warningMessage.style.display = 'block';
-            warningMessage.textContent = `Note: No concentration checks are performed for ${typeConfig.name}. Please verify your calculations.`;
-        } else if (concentration > typeConfig.thresholdConcentration) {
+        // Check both concentration and BAC water volume
+        const totalBacWater = bacWaterPerVial * numVials;
+        const hasConcentrationWarning = typeConfig.thresholdConcentration > 0 && concentration > typeConfig.thresholdConcentration;
+        const hasBacWaterWarning = totalBacWater > 3;
+        const hasLowUnitsWarning = calculatedUnits < 10;
+        
+        if (hasConcentrationWarning || hasBacWaterWarning || hasLowUnitsWarning) {
             allInputGroups.forEach(item => item.classList.add('alert'));
             warningMessage.style.display = 'block';
-            warningMessage.textContent = `Warning: Calculated concentration exceeds the recommended maximum of ${typeConfig.thresholdConcentration} mg/ml for ${typeConfig.name}.`;
+            
+            let warningText = '';
+            if (hasConcentrationWarning) {
+                warningText = `Warning: Calculated concentration exceeds the recommended maximum of ${typeConfig.thresholdConcentration} mg/ml for ${typeConfig.name}.`;
+            }
+            if (hasBacWaterWarning) {
+                if (warningText) warningText += ' ';
+                warningText += 'Warning: Most vials/cartridges can only handle 3ml of liquid.';
+            }
+            if (hasLowUnitsWarning) {
+                if (warningText) warningText += ' ';
+                warningText += 'Warning: Low units per dose may affect dosing precision. Small volume measurements can lead to increased margin of error.';
+            }
+            warningMessage.textContent = warningText;
         } else {
             allInputGroups.forEach(item => item.classList.remove('alert'));
             warningMessage.style.display = 'none';
@@ -863,8 +897,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to clear all results
     function clearResults() {
-        elements.labelElements.bacWaterInput.value = '';
-        elements.labelElements.dosesPerVialInput.value = '';
+        elements.labelElements.bacWaterPerVialInput.value = '';
+        elements.labelElements.bacWaterTotalInput.value = '';
+        elements.labelElements.dosesPerLyophilizedVialInput.value = '';
+        elements.labelElements.dosesPerFinalVialInput.value = '';
+        elements.labelElements.numVialsSelect.value = '1';
         updateDropdownValue('units', '');
         document.getElementById('warningMessage').style.display = 'none';
     }
@@ -1332,6 +1369,10 @@ document.addEventListener('DOMContentLoaded', () => {
         handleUrlChange();
         saveSettings(); // Save settings when URL changes
     });
+    elements.labelElements.numVialsSelect.addEventListener('change', () => {
+        calculateResults();
+        saveSettings(); // Save settings when number of vials changes
+    });
     
     // Function to handle URL input changes
     function handleUrlChange() {
@@ -1383,6 +1424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem(CONFIG.storageKeys.dose, dropdowns.dose.selectElement.value);
             localStorage.setItem(CONFIG.storageKeys.units, dropdowns.units.selectElement.value);
             localStorage.setItem(CONFIG.storageKeys.concentration, dropdowns.concentration.selectElement.value);
+            localStorage.setItem(CONFIG.storageKeys.numVials, dropdowns.numVials.selectElement.value);
             
             // Save custom input values if in custom mode
             if (dropdowns.vialQuantity.selectElement.value === 'custom') {
@@ -1399,6 +1441,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (dropdowns.concentration.selectElement.value === 'custom') {
                 localStorage.setItem(CONFIG.storageKeys.concentrationCustom, dropdowns.concentration.customInput.value);
+            }
+
+            if (dropdowns.numVials.selectElement.value === 'custom') {
+                localStorage.setItem(CONFIG.storageKeys.numVialsCustom, dropdowns.numVials.customInput.value);
             }
             
             // Save label and URL inputs
@@ -1449,5 +1495,33 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reload the page
             window.location.reload();
         }
+    });
+
+    // Add event listeners for initial calculation
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add change event listeners to all inputs that affect calculations
+        const inputs = [
+            dropdowns.vialQuantity.selectElement,
+            dropdowns.vialQuantity.customInput,
+            dropdowns.dose.selectElement,
+            dropdowns.dose.customInput,
+            dropdowns.concentration.selectElement,
+            dropdowns.concentration.customInput,
+            dropdowns.units.selectElement,
+            dropdowns.units.customInput,
+            elements.labelElements.numVialsSelect
+        ];
+
+        inputs.forEach(input => {
+            if (input) {
+                input.addEventListener('change', calculateResults);
+                if (input.type === 'text' || input.type === 'number') {
+                    input.addEventListener('input', calculateResults);
+                }
+            }
+        });
+
+        // Trigger initial calculation
+        calculateResults();
     });
 });
