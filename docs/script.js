@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 concentrationValues: [10, 20, 25, 30, 40, 50, 60],
                 defaultVialQuantity: 30,
                 defaultDose: 5,
-                defaultConcentration: 25,
+                defaultConcentration: 10,
                 thresholdConcentration: 60 // mg/ml
             },
             sema: {
@@ -1438,4 +1438,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start the application initialization
     initializeApp();
+
+    // Add reset button handler
+    document.getElementById('resetSettingsButton').addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all settings? This will clear all saved data and reload the page.')) {
+            // Clear all localStorage items
+            Object.values(CONFIG.storageKeys).forEach(key => {
+                localStorage.removeItem(key);
+            });
+            // Reload the page
+            window.location.reload();
+        }
+    });
 });
