@@ -825,19 +825,46 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.labelElements.dosesPerLyophilizedVialInput.value = dosesPerVial.toFixed(1);
         elements.labelElements.dosesPerFinalVialInput.value = (dosesPerVial * numVials).toFixed(1);
 
-        // Calculate BAC water
+        // Calculate BAC water and update concentration/units
         let bacWaterPerVial;
         let calculatedUnits;
-        if (concentration > 0) {
-            // Calculate BAC water based on concentration
+        let calculatedConcentration;
+
+        // Determine which value was changed by the user
+        const activeElement = document.activeElement;
+        const isConcentrationChange = activeElement === dropdowns.concentration.selectElement || 
+                                    activeElement === dropdowns.concentration.customInput;
+        const isUnitsChange = activeElement === dropdowns.units.selectElement || 
+                            activeElement === dropdowns.units.customInput;
+
+        if (isConcentrationChange && concentration > 0) {
+            // User changed concentration, calculate units
             bacWaterPerVial = vialQuantity / concentration;
-            // Calculate units based on concentration
             calculatedUnits = (dose * CONFIG.constants.unitsPerML) / concentration;
-        } else if (units > 0) {
-            // Calculate BAC water based on units
-            const calculatedConcentration = (dose * CONFIG.constants.unitsPerML) / units;
+            calculatedConcentration = concentration;
+            // Update units dropdown
+            updateDropdownValue('units', calculatedUnits);
+        } else if (isUnitsChange && units > 0) {
+            // User changed units, calculate concentration
+            calculatedConcentration = (dose * CONFIG.constants.unitsPerML) / units;
             bacWaterPerVial = vialQuantity / calculatedConcentration;
             calculatedUnits = units;
+            // Update concentration dropdown
+            updateDropdownValue('concentration', calculatedConcentration);
+        } else if (concentration > 0) {
+            // Default to using concentration if available
+            bacWaterPerVial = vialQuantity / concentration;
+            calculatedUnits = (dose * CONFIG.constants.unitsPerML) / concentration;
+            calculatedConcentration = concentration;
+            // Update units dropdown
+            updateDropdownValue('units', calculatedUnits);
+        } else if (units > 0) {
+            // Fall back to using units
+            calculatedConcentration = (dose * CONFIG.constants.unitsPerML) / units;
+            bacWaterPerVial = vialQuantity / calculatedConcentration;
+            calculatedUnits = units;
+            // Update concentration dropdown
+            updateDropdownValue('concentration', calculatedConcentration);
         }
 
         if (bacWaterPerVial > 0) {
@@ -854,14 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('peptidePerVialDisplay').textContent = vialQuantity.toFixed(1);
             document.getElementById('totalPeptideDisplay').textContent = (vialQuantity * numVials).toFixed(1);
             document.getElementById('bacWaterTotalDisplay').textContent = (bacWaterPerVial * numVials).toFixed(1);
-            document.getElementById('finalConcentrationDisplay').textContent = concentration > 0 ? 
-                concentration.toFixed(1) : 
-                ((dose * CONFIG.constants.unitsPerML) / units).toFixed(1);
-
-            // Update units dropdown if we calculated new units
-            if (calculatedUnits) {
-                updateDropdownValue('units', calculatedUnits);
-            }
+            document.getElementById('finalConcentrationDisplay').textContent = calculatedConcentration.toFixed(1);
         }
 
         // Check concentration and BAC water volume
