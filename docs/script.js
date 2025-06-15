@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             units: {
                 selectId: 'unitsSelect',
                 customInputId: 'unitsCustom',
-                values: [20, 30, 40, 50, 75, 100],
+                values: [10, 20, 30, 40, 50, 60, 75, 100],
                 defaultValue: 40,
                 suffix: "",
                 customLabel: "Other"
