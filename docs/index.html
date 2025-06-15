@@ -47,31 +47,48 @@
         <div class="calculator-card">
             <div class="input-group">
                 <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
-                <select id="vialQuantitySelect"></select>
-                <input type="number" id="vialQuantityCustom" min="0" step="0.1" placeholder="Enter custom quantity" style="display:none; margin-top:0.5rem;">
+                <div class="input-wrapper">
+                    <select id="vialQuantitySelect"></select>
+                    <input type="number" id="vialQuantityCustom" min="0" step="0.1" placeholder="Enter custom quantity" style="display:none;">
+                    <span class="unit">mg</span>
+                </div>
             </div>
             <div class="input-group">
                 <label for="doseSelect">Peptide Dose (mg)</label>
-                <select id="doseSelect"></select>
-                <input type="number" id="doseCustom" min="0" step="0.1" placeholder="Enter custom dose" style="display:none; margin-top:0.5rem;">
+                <div class="input-wrapper">
+                    <select id="doseSelect"></select>
+                    <input type="number" id="doseCustom" min="0" step="0.1" placeholder="Enter custom dose" style="display:none;">
+                    <span class="unit">mg</span>
+                </div>
             </div>
             <div class="input-group">
-                <label for="unitsSelect">Desired Units per Dose</label>
-                <select id="unitsSelect"></select>
-                <input type="number" id="unitsCustom" min="0" step="0.1" placeholder="Enter custom units" style="display:none; margin-top:0.5rem;">
+                <label for="concentrationSelect">Concentration</label>
+                <div class="input-wrapper">
+                    <select id="concentrationSelect"></select>
+                    <input type="number" id="concentrationCustom" min="0" step="0.1" placeholder="Enter custom concentration" style="display:none;">
+                    <span class="unit">mg/ml</span>
+                </div>
             </div>
-            <div class="results">
-                <div class="result-item">
-                    <h3>BAC Water Required</h3>
-                    <p id="bacWater">-</p>
+            <div class="input-group">
+                <label for="unitsSelect">Units per Dose</label>
+                <div class="input-wrapper">
+                    <select id="unitsSelect"></select>
+                    <input type="number" id="unitsCustom" min="0" step="0.1" placeholder="Enter custom units" style="display:none;">
+                    <span class="unit">units</span>
                 </div>
-                <div class="result-item">
-                    <h3>Doses per Vial</h3>
-                    <p id="dosesPerVial">-</p>
+            </div>
+            <div class="input-group">
+                <label for="bacWaterInput">BAC Water Required</label>
+                <div class="input-wrapper">
+                    <input type="number" id="bacWaterInput" min="0" step="0.1" readonly>
+                    <span class="unit">ml</span>
                 </div>
-                <div class="result-item">
-                    <h3>Concentration</h3>
-                    <p id="concentration">-</p>
+            </div>
+            <div class="input-group">
+                <label for="dosesPerVialInput">Doses per Vial</label>
+                <div class="input-wrapper">
+                    <input type="number" id="dosesPerVialInput" min="0" step="0.1" readonly>
+                    <span class="unit">doses</span>
                 </div>
             </div>
             <p id="warningMessage" class="warning-message" style="display:none;">Warning: Calculated concentration exceeds the recommended maximum threshold.</p>

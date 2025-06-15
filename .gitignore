@@ -20,3 +20,4 @@ build/
 # Environment files
 .env
 .env.local
+nohup.out

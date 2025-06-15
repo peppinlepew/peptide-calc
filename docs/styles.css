@@ -44,17 +44,38 @@ h1 {
 
 .input-group {
     margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
 }
 
-label {
+.input-group.alert {
+    background-color: #ffeded;
+    border: 2px solid #ff5c5c;
+}
+
+.input-group.alert .input-wrapper select,
+.input-group.alert .input-wrapper input {
+    border-color: #ff5c5c;
+}
+
+.input-group label {
     display: block;
     margin-bottom: 0.5rem;
     color: var(--secondary-color);
     font-weight: 500;
 }
 
-input {
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     width: 100%;
+}
+
+.input-wrapper select,
+.input-wrapper input {
+    flex: 1;
     padding: 0.8rem;
     border: 2px solid #e1e1e1;
     border-radius: var(--border-radius);
@@ -62,21 +83,19 @@ input {
     transition: border-color 0.3s ease;
 }
 
-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
+.input-wrapper input[type="number"] {
+    text-align: right;
 }
 
-select {
-    width: 100%;
-    padding: 0.8rem;
-    border: 2px solid #e1e1e1;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+.input-wrapper .unit {
+    min-width: 40px;
+    text-align: left;
+    color: #666;
+    font-size: 0.9rem;
 }
 
-select:focus {
+.input-wrapper select:focus,
+.input-wrapper input:focus {
     outline: none;
     border-color: var(--primary-color);
 }
@@ -100,28 +119,38 @@ button:hover {
 
 .results {
     margin-top: 2rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
+}
+
+.results .input-group {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+}
+
+.results .input-group.alert {
+    background-color: #ffeded;
+    border: 2px solid #ff5c5c;
+}
+
+.results .input-group.alert .input-wrapper select,
+.results .input-group.alert .input-wrapper input {
+    border-color: #ff5c5c;
 }
 
 .result-item {
     background-color: #f8f9fa;
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.result-item h3 {
-    color: var(--secondary-color);
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-}
-
-.result-item p {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--primary-color);
+.result-item .unit {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
 }
 
 .result-item.alert {
@@ -137,10 +166,6 @@ button:hover {
 }
 
 @media (max-width: 600px) {
-    .results {
-        grid-template-columns: 1fr;
-    }
-    
     .container {
         margin: 1rem auto;
     }
