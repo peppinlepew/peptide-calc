@@ -46,8 +46,8 @@
             <p>This calculator simplifies peptide reconstitution by determining the precise amount of BAC water needed to achieve clean, round numbers of units per dose. No more mental math or imprecise measurements!</p>
         </div>
         <div class="calculator-card">
-            <div class="input-group" style="display: flex; gap: 1rem;">
-                <div style="flex: 2;">
+            <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 200px;">
                     <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
                     <div class="input-wrapper">
                         <select id="vialQuantitySelect"></select>
@@ -55,7 +55,7 @@
                         <span class="unit">mg</span>
                     </div>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1; min-width: 200px;">
                     <label for="numVialsSelect">Number of Vials</label>
                     <div class="input-wrapper">
                         <select id="numVialsSelect"></select>
@@ -90,32 +90,32 @@
                 </div>
                 <span class="field-warning" id="unitsWarning" style="display:none; color: #dc3545; font-size: 0.9em; margin-top: 0.25rem;"></span>
             </div>
-            <div class="input-group" style="display: flex; gap: 1rem;">
-                <div style="flex: 1;">
+            <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
                     <label for="bacWaterPerVialInput">BAC Water per Vial</label>
                     <div class="input-wrapper">
                         <input type="number" id="bacWaterPerVialInput" min="0" step="0.1" readonly>
                         <span class="unit">ml</span>
                     </div>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1; min-width: 200px;">
                     <label for="bacWaterTotalInput">BAC Water Total</label>
                     <div class="input-wrapper">
                         <input type="number" id="bacWaterTotalInput" min="0" step="0.1" readonly>
                         <span class="unit">ml</span>
                     </div>
                 </div>
-                <span class="field-warning" id="bacWaterWarning" style="display:none; color: #dc3545; font-size: 0.9em; margin-top: 0.25rem;"></span>
+                <span class="field-warning" id="bacWaterWarning" style="display:none; color: #dc3545; font-size: 0.9em; margin-top: 0.25rem; width: 100%;"></span>
             </div>
-            <div class="input-group" style="display: flex; gap: 1rem;">
-                <div style="flex: 1;">
+            <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
                     <label for="dosesPerLyophilizedVialInput">Doses per Lyophilized Vial</label>
                     <div class="input-wrapper">
                         <input type="number" id="dosesPerLyophilizedVialInput" min="0" step="0.1" readonly>
                         <span class="unit">doses</span>
                     </div>
                 </div>
-                <div style="flex: 1;">
+                <div style="flex: 1; min-width: 200px;">
                     <label for="dosesPerFinalVialInput">Doses per Final Vial/cartridge</label>
                     <div class="input-wrapper">
                         <input type="number" id="dosesPerFinalVialInput" min="0" step="0.1" readonly>
