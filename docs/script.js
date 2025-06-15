@@ -484,9 +484,15 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.selects[config.selectId] = selectElement;
         elements.customInputs[config.customInputId] = customInput;
         
+        // Store the last selected value
+        let lastSelectedValue = selectElement.value;
+        
         // Add event listeners
         selectElement.addEventListener('change', () => {
-            handleCustomInputVisibility(selectElement, customInput);
+            if (selectElement.value !== 'custom') {
+                lastSelectedValue = selectElement.value;
+            }
+            handleCustomInputVisibility(selectElement, customInput, lastSelectedValue);
             calculateResults();
             saveSettings(); // Save settings when changed
         });
@@ -1478,9 +1484,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Helper function to handle custom input visibility
-    function handleCustomInputVisibility(selectElement, customInput) {
+    function handleCustomInputVisibility(selectElement, customInput, lastSelectedValue) {
         if (selectElement.value === 'custom') {
             customInput.style.display = 'block';
+            if (lastSelectedValue && lastSelectedValue !== 'custom') {
+                customInput.value = lastSelectedValue;
+            }
         } else {
             customInput.style.display = 'none';
             customInput.value = '';
