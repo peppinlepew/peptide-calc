@@ -116,7 +116,7 @@
                     </div>
                 </div>
                 <div style="flex: 1;">
-                    <label for="dosesPerFinalVialInput">Doses per Final Vial</label>
+                    <label for="dosesPerFinalVialInput">Doses per Final Vial/cartridge</label>
                     <div class="input-wrapper">
                         <input type="number" id="dosesPerFinalVialInput" min="0" step="0.1" readonly>
                         <span class="unit">doses</span>
@@ -161,9 +161,12 @@
                 <input type="date" id="dateInput">
             </div>
             <div class="input-group">
-                <label for="urlInput">URL</label>
+                <label for="urlInput">URL for the COA</label>
                 <input type="url" id="urlInput" placeholder="eg. results URL" style="width: 100%;">
                 <div id="shortenedUrlDisplay" class="shortened-url"></div>
+                <div style="font-size: 0.9em; color: #666; margin-top: 0.5rem;">
+                    <em>Tip: Using a shortened URL creates a simpler QR code that's easier to print clearly on small labels.</em>
+                </div>
             </div>
             
             <!-- Canvas for Data Matrix code generation (hidden) -->

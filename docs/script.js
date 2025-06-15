@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectId: 'vialQuantitySelect',
                 customInputId: 'vialQuantityCustom',
                 suffix: "mg",
-                customLabel: "Custom"
+                customLabel: "Other"
             },
             dose: {
                 selectId: 'doseSelect',
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectId: 'concentrationSelect',
                 customInputId: 'concentrationCustom',
                 suffix: "mg/ml",
-                customLabel: "Custom"
+                customLabel: "Other"
             },
             numVials: {
                 selectId: 'numVialsSelect',
