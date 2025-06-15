@@ -858,37 +858,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Check concentration threshold
+        // Check concentration and BAC water volume
         const typeConfig = CONFIG.peptideTypes[CONFIG.activePeptideType];
-        const allInputGroups = document.querySelectorAll('.input-group');
-        const warningMessage = document.getElementById('warningMessage');
-        
-        // Check both concentration and BAC water volume
         const totalBacWater = bacWaterPerVial * numVials;
         const hasConcentrationWarning = typeConfig.thresholdConcentration > 0 && concentration > typeConfig.thresholdConcentration;
         const hasBacWaterWarning = totalBacWater > 3;
         const hasLowUnitsWarning = calculatedUnits < 10;
         
-        if (hasConcentrationWarning || hasBacWaterWarning || hasLowUnitsWarning) {
-            allInputGroups.forEach(item => item.classList.add('alert'));
-            warningMessage.style.display = 'block';
-            
-            let warningText = '';
-            if (hasConcentrationWarning) {
-                warningText = `Warning: Calculated concentration exceeds the recommended maximum of ${typeConfig.thresholdConcentration} mg/ml for ${typeConfig.name}.`;
-            }
-            if (hasBacWaterWarning) {
-                if (warningText) warningText += ' ';
-                warningText += 'Warning: Most vials/cartridges can only handle 3ml of liquid.';
-            }
-            if (hasLowUnitsWarning) {
-                if (warningText) warningText += ' ';
-                warningText += 'Warning: Low units per dose may affect dosing precision. Small volume measurements can lead to increased margin of error.';
-            }
-            warningMessage.textContent = warningText;
-        } else {
-            allInputGroups.forEach(item => item.classList.remove('alert'));
-            warningMessage.style.display = 'none';
+        // Reset all warnings
+        document.getElementById('concentrationWarning').style.display = 'none';
+        document.getElementById('unitsWarning').style.display = 'none';
+        document.getElementById('bacWaterWarning').style.display = 'none';
+        document.querySelectorAll('.input-group').forEach(item => item.classList.remove('alert'));
+        
+        // Show specific warnings
+        if (hasConcentrationWarning) {
+            const concentrationGroup = document.querySelector('.input-group:has(#concentrationSelect)');
+            concentrationGroup.classList.add('alert');
+            const warning = document.getElementById('concentrationWarning');
+            warning.textContent = `Warning: Exceeds recommended maximum of ${typeConfig.thresholdConcentration} mg/ml for ${typeConfig.name}.`;
+            warning.style.display = 'block';
+        }
+        
+        if (hasBacWaterWarning) {
+            const bacWaterGroup = document.querySelector('.input-group:has(#bacWaterTotalInput)');
+            bacWaterGroup.classList.add('alert');
+            const warning = document.getElementById('bacWaterWarning');
+            warning.textContent = 'Warning: Most vials/cartridges can only handle 3ml of liquid.  Either change the number of vials or the concentration.';
+            warning.style.display = 'block';
+        }
+        
+        if (hasLowUnitsWarning) {
+            const unitsGroup = document.querySelector('.input-group:has(#unitsSelect)');
+            unitsGroup.classList.add('alert');
+            const warning = document.getElementById('unitsWarning');
+            warning.textContent = 'Warning: Low units per dose may affect dosing precision. Small volume measurements can lead to increased margin of error.';
+            warning.style.display = 'block';
         }
 
         // Generate the labels
