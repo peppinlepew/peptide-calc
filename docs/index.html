@@ -47,45 +47,45 @@
         </div>
         <div class="calculator-card">
             <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <div style="flex: 2; min-width: 200px;">
+                <div style="flex: 2; min-width: 300px;">
                     <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
-                    <div class="input-wrapper">
-                        <select id="vialQuantitySelect"></select>
-                        <input type="number" id="vialQuantityCustom" min="0" step="0.1" placeholder="Enter custom quantity" style="display:none;">
+                    <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select id="vialQuantitySelect" style="flex: 1;"></select>
+                        <input type="number" id="vialQuantityCustom" min="0" step="0.1" placeholder="Enter custom quantity" style="display:none; flex: 1;">
                         <span class="unit">mg</span>
                     </div>
                 </div>
-                <div style="flex: 1; min-width: 200px;">
+                <div style="flex: 1; min-width: 300px;">
                     <label for="numVialsSelect">Number of Vials</label>
-                    <div class="input-wrapper">
-                        <select id="numVialsSelect"></select>
-                        <input type="number" id="numVialsCustom" min="1" step="1" placeholder="Enter custom number" style="display:none;">
+                    <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select id="numVialsSelect" style="flex: 1;"></select>
+                        <input type="number" id="numVialsCustom" min="1" step="1" placeholder="Enter custom number" style="display:none; flex: 1;">
                         <span class="unit">vials</span>
                     </div>
                 </div>
             </div>
             <div class="input-group">
                 <label for="doseSelect">Peptide Dose (mg)</label>
-                <div class="input-wrapper">
-                    <select id="doseSelect"></select>
-                    <input type="number" id="doseCustom" min="0" step="0.1" placeholder="Enter custom dose" style="display:none;">
+                <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="doseSelect" style="flex: 1;"></select>
+                    <input type="number" id="doseCustom" min="0" step="0.1" placeholder="Enter custom dose" style="display:none; flex: 1;">
                     <span class="unit">mg</span>
                 </div>
             </div>
             <div class="input-group">
                 <label for="concentrationSelect">Concentration</label>
-                <div class="input-wrapper">
-                    <select id="concentrationSelect"></select>
-                    <input type="number" id="concentrationCustom" min="0" step="0.1" placeholder="Enter custom concentration" style="display:none;">
+                <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="concentrationSelect" style="flex: 1;"></select>
+                    <input type="number" id="concentrationCustom" min="0" step="0.1" placeholder="Enter custom concentration" style="display:none; flex: 1;">
                     <span class="unit">mg/ml</span>
                 </div>
                 <span class="field-warning" id="concentrationWarning" style="display:none; color: #dc3545; font-size: 0.9em; margin-top: 0.25rem;"></span>
             </div>
             <div class="input-group">
                 <label for="unitsSelect">Units per Dose</label>
-                <div class="input-wrapper">
-                    <select id="unitsSelect"></select>
-                    <input type="number" id="unitsCustom" min="0" step="0.1" placeholder="Enter custom units" style="display:none;">
+                <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
+                    <select id="unitsSelect" style="flex: 1;"></select>
+                    <input type="number" id="unitsCustom" min="0" step="0.1" placeholder="Enter custom units" style="display:none; flex: 1;">
                     <span class="unit">units</span>
                 </div>
                 <span class="field-warning" id="unitsWarning" style="display:none; color: #dc3545; font-size: 0.9em; margin-top: 0.25rem;"></span>
@@ -218,5 +218,22 @@
             </div>
         </div>
     </footer>
+    <style>
+    @media (max-width: 600px) {
+        .input-wrapper {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .input-wrapper select,
+        .input-wrapper input {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+    }
+    .input-wrapper select,
+    .input-wrapper input {
+        min-width: 120px;
+    }
+    </style>
 </body>
 </html>
