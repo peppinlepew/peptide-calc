@@ -46,8 +46,8 @@
             <p>This calculator simplifies peptide reconstitution by determining the precise amount of BAC water needed to achieve clean, round numbers of units per dose. No more mental math or imprecise measurements!</p>
         </div>
         <div class="calculator-card">
-            <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <div style="flex: 2; min-width: 300px;">
+            <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <div style="flex: 2; min-width: 300px; max-width: 100%;">
                     <label for="vialQuantitySelect">Quantity of Peptide in Vial (mg)</label>
                     <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
                         <select id="vialQuantitySelect" style="flex: 1;"></select>
@@ -55,7 +55,7 @@
                         <span class="unit">mg</span>
                     </div>
                 </div>
-                <div style="flex: 1; min-width: 300px;">
+                <div style="flex: 1; min-width: 300px; max-width: 100%;">
                     <label for="numVialsSelect">Number of Vials</label>
                     <div class="input-wrapper" style="display: flex; gap: 0.5rem; align-items: center;">
                         <select id="numVialsSelect" style="flex: 1;"></select>
@@ -221,15 +221,43 @@
     <style>
     @media (max-width: 600px) {
         .input-wrapper {
-            flex-direction: column !important;
-            align-items: stretch !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
         }
         .input-wrapper select,
         .input-wrapper input {
-            width: 100% !important;
+            width: auto !important;
             min-width: 0 !important;
+            flex: 1 !important;
+        }
+        .input-wrapper .unit {
+            flex-shrink: 0 !important;
         }
     }
+
+    /* iPhone specific adjustments */
+    @media screen and (max-width: 428px) {
+        .calculator-card {
+            padding: 1rem !important;
+        }
+        .input-group {
+            padding: 0.5rem !important;
+        }
+        .input-group > div {
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
+        .input-wrapper {
+            width: 100% !important;
+        }
+        .input-wrapper select,
+        .input-wrapper input {
+            width: auto !important;
+            box-sizing: border-box !important;
+        }
+    }
+
     .input-wrapper select,
     .input-wrapper input {
         min-width: 120px;
