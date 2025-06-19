@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             unitsPerML: 100, // 100 units = 1 ml
             labelHeight: 10, // mm
             labelMaxWidth: 50, // mm
-            scaleFactor: 3, // For higher resolution PNG
+            scaleFactor: 9, // For higher resolution PNG (3x current resolution)
             defaultRickrollURL: 'https://is.gd/vXpyxu(base)'
         },
         // Storage keys for localStorage
@@ -1094,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to generate reconstituted vial labels
     function generateReconstitutedLabels(url, label, concentration, formattedDate, dose, units) {
         // Generate QR code label
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=450x450&data=${encodeURIComponent(url)}`;
         const qrCodeImg = new Image();
         qrCodeImg.crossOrigin = "Anonymous";
         qrCodeImg.onload = function() {
@@ -1118,8 +1118,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById('dataMatrixCanvas');
         try {
             // Set canvas dimensions
-            canvas.width = 150;
-            canvas.height = 150;
+            canvas.width = 450;
+            canvas.height = 450;
             
             // Clear previous content
             const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -1129,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bwipjs.toCanvas(canvas, {
                 bcid: 'datamatrix',         // Barcode type
                 text: url,                  // Text to encode
-                scale: 3,                   // 3x scaling factor
+                scale: 9,                   // 9x scaling factor (3x current resolution)
                 height: 50,                 // Bar height (overridden by scale)
                 includetext: false,         // Show human-readable text
                 textxalign: 'center',       // Text alignment
@@ -1160,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to generate un-reconstituted vial labels
     function generateUnreconstitutedLabels(url, label, fullFormattedDate, vialQuantity) {
         // Generate QR code label
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(url)}`;
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=450x450&data=${encodeURIComponent(url)}`;
         const qrCodeImg = new Image();
         qrCodeImg.crossOrigin = "Anonymous";
         qrCodeImg.onload = function() {
@@ -1184,8 +1184,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById('dataMatrixCanvas');
         try {
             // Set canvas dimensions
-            canvas.width = 150;
-            canvas.height = 150;
+            canvas.width = 450;
+            canvas.height = 450;
             
             // Clear previous content
             const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -1195,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bwipjs.toCanvas(canvas, {
                 bcid: 'datamatrix',         // Barcode type
                 text: url,                  // Text to encode
-                scale: 3,                   // 3x scaling factor
+                scale: 9,                   // 9x scaling factor (3x current resolution)
                 height: 50,                 // Bar height (overridden by scale)
                 includetext: false,         // Show human-readable text
                 textxalign: 'center',       // Text alignment
@@ -1240,8 +1240,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const baseHeightPx = Math.round((targetHeightMm / 25.4) * 96);
         const barcodeSizePx = baseHeightPx;
         
-        // Create canvas with 3x scale for better quality
-        const scaleFactor = 3;
+        // Create canvas with 9x scale for better quality (3x current resolution)
+        const scaleFactor = 9;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         
@@ -1254,7 +1254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const text3 = line3;
         
         // Set up text for measuring - now all lines use the same font size
-        ctx.font = `${fontSize * scaleFactor}px monospace`;
+        ctx.font = `bold ${fontSize * scaleFactor}px monospace`;
         
         // Measure text widths - all with the same font size
         const text1Width = ctx.measureText(text1).width;
@@ -1298,7 +1298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const verticalAdjustment = Math.floor(lineSpacing / 2);
         
         // Set font for all text (same size for all lines)
-        ctx.font = `${Math.floor(fontSize * scaleFactor)}px monospace`;
+        ctx.font = `bold ${Math.floor(fontSize * scaleFactor)}px monospace`;
         
         // Draw line 1
         const y1 = Math.floor((centerY - lineSpacing - verticalAdjustment) * scaleFactor);
