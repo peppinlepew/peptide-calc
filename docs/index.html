@@ -133,19 +133,56 @@
                     <strong>Summary:</strong>
                     <ul style="margin: 0.5rem 0 0 0;">
                         <li>Number of vials: <span id="numVialsDisplay">X</span></li>
-                        <li>Peptide per vial: <span id="peptidePerVialDisplay">X</span>mg</li>
-                        <li>Total BAC Water: <span id="bacWaterTotalDisplay">X</span>ml</li>
-                        <li>Final Concentration: <span id="finalConcentrationDisplay">X</span>mg/ml</li>
-                        <li>Total peptide in final cartridge: <span id="totalPeptideDisplay">X</span>mg</li>
+                        <li>Peptide per vial: <span id="peptidePerVialDisplay">X</span> mg</li>
+                        <li>Total BAC Water: <span id="bacWaterTotalDisplay">X</span> ml</li>
+                        <li>Final Concentration: <span id="finalConcentrationDisplay">X</span> mg/ml</li>
+                        <li>Total peptide in final cartridge: <span id="totalPeptideDisplay">X</span> mg</li>
                     </ul>
                 </div>
-                <p style="margin: 0 0 1rem 0;">Using your normal reconstitution routine:</p>
+
+                <h3 style="margin-top: 0.5rem;">Gather materials</h3>
+                <ul>
+                    <li>3 × ⅝” needles</li>
+                    <li>1 × 1 ½” needle</li>
+                    <li>1 × 3 ml syringe</li>
+                    <li>1 × sterile 0.22μm filter</li>
+                    <li><span id="materialsVialsCount">X</span> peptide vials containing <span id="materialsMgPerVial">X</span> mg each</li>
+                    <li>Target concentration: <span id="materialsConcentration">X</span> mg/ml</li>
+                    <li>Total BAC water: <span id="materialsTotalBac">X</span> ml, plus some extra for purging and flushing</li>
+                    <li>1 × sterile empty cartridge/vial</li>
+                    <li>1 × pen needle</li>
+                </ul>
+
+                <div style="margin: 1rem 0; padding: 1rem; background-color: #e9f7ef; border: 1px solid #cdebd8; border-radius: 6px;">
+                    <strong>This technique has the following benefits:</strong>
+                    <ul style="margin: 0.5rem 0 0 0;">
+                        <li>✅ fully purges filters of any size. No need to think about hold-back volume</li>
+                        <li>✅ keeps the BAC vial as uncontaminated as possible</li>
+                        <li>✅ prevents contamination of the cartridge</li>
+                    </ul>
+                </div>
+
                 <ol style="margin: 0; padding-left: 1.5rem;">
-                    <li>Withdraw <span id="bacWaterAmount">X</span>ml of BAC water into one syringe</li>
-                    <li>Inject <span id="bacWaterPerVialDisplay">X</span>ml into <span id="vialText">each vial</span> of lyophilized peptide</li>
-                    <li>Gently swirl (do not shake) until fully dissolved (let stand for 30 minutes)</li>
-                    <li>Transfer the reconstituted peptide through a sterile filter into your final container</li>
-                    <li>Store in refrigerator</li>
+                    <li>Sanitize everything with 70% IPA</li>
+                    <li>Draw up <span id="totalBacDisplay">X</span> ml + <span id="primingReserveDisplay">0.3</span> ml = <strong><span id="drawUpAmountDisplay">X</span> ml</strong> of BAC, or more</li>
+                    <li>Attach filter and ⅝” needle to BAC. Purge all air out of filter and needle</li>
+                    <li>Insert the needle + filter into the cart. Leave this needle + filter in the cart until the entire process is complete</li>
+                    <li>Remove the syringe (with all remaining BAC) from the filter, leaving the filter attached to the cart</li>
+                    <li>Attach a new 1 ½” needle</li>
+                    <li>Purge so there is <strong><span id="purgeDownToDisplay">X</span> ml</strong> left in the syringe. Note: we’re reserving <span id="finalFlushReserveDisplay">0.5</span> ml for the final filter flush</li>
+                    <li>Split that <span id="splitVolumeDisplay">X</span> ml evenly between the peptide vials. That’s approximately <strong><span id="splitVolumePerVialDisplay">X</span> ml</strong> in each vial. The syringe should now be empty</li>
+                    <li>Cap the needle. Swirl the vials gently and wait 30 minutes, or at least 10 minutes more than you think you should (this allows microsocopic particles to dissolve)</li>
+                    <li>Uncap the needle and draw up the <span id="splitVolumeDisplay_2">X</span> ml of dissolved peptide solution from all the vials</li>
+                    <li>Remove the needle and discard it</li>
+                    <li>Get your ⅝” vent needle ready</li>
+                    <li>Attach the syringe to the filter/cart</li>
+                    <li>Gently press about <strong><span id="preVentPressInVolumeDisplay">0.5</span> ml</strong> into the cart to create slight positive pressure. Do not over-pressurize or you risk blowing the plug out the bottom of the cartridge.  The amount is not critical.</li>
+                    <li>Insert a ⅝” needle as a vent into the cart. Doing it in this order minimizes contamination risk; internal pressure keeps airflow one direction in the vent needle</li>
+                    <li>Finish injecting the rest of the peptide solution into the cart. Venting prevents excess pressure buildup</li>
+                    <li>We are still <strong><span id="finalFlushReserveDisplay_2">0.5</span> ml</strong> short. Using a new ⅝” needle (never reuse a needle in the BAC vial), draw up <span id="finalFlushReserveDisplay_3">0.5</span> ml of BAC water. Disconnect that needle and discard it, reattach the syringe to the filter, and push the last <span id="finalFlushReserveDisplay_4">0.5</span> ml through to flush the filter</li>
+                    <li>Remove the vent needle and the filter needle</li>
+                    <li>Attach a pen needle and purge all air from the cart</li>
+                    <li>Detach the pen needle and discard. You're ready to go!</li>
                 </ol>
             </div>
         </div>

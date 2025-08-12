@@ -79,7 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
             labelHeight: 10, // mm
             labelMaxWidth: 50, // mm
             scaleFactor: 9, // For higher resolution PNG (3x current resolution)
-            defaultRickrollURL: 'https://is.gd/vXpyxu(base)'
+            defaultRickrollURL: 'https://is.gd/vXpyxu(base)',
+            // Instruction-flow reserves (ml)
+            primingReserveMl: 0.3,
+            finalFlushReserveMl: 0.3,
+            preVentPressInMl: 0.3
         },
         // Storage keys for localStorage
         storageKeys: {
@@ -872,9 +876,47 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.labelElements.bacWaterTotalInput.value = (bacWaterPerVial * numVials).toFixed(1);
             
             // Update instruction amounts
-            document.getElementById('bacWaterAmount').textContent = (bacWaterPerVial * numVials).toFixed(1);
-            document.getElementById('bacWaterPerVialDisplay').textContent = bacWaterPerVial.toFixed(1);
-            document.getElementById('vialText').textContent = numVials > 1 ? 'each vial' : 'the vial';
+            const totalBac = bacWaterPerVial * numVials;
+            const primingReserve = CONFIG.constants.primingReserveMl;
+            const finalFlushReserve = CONFIG.constants.finalFlushReserveMl;
+            const preVentPressIn = CONFIG.constants.preVentPressInMl;
+
+            // Backwards-compat placeholders (if present in DOM)
+            const elTotalAmt = document.getElementById('bacWaterAmount');
+            if (elTotalAmt) elTotalAmt.textContent = totalBac.toFixed(1);
+            const elPerVial = document.getElementById('bacWaterPerVialDisplay');
+            if (elPerVial) elPerVial.textContent = bacWaterPerVial.toFixed(1);
+            const elVialText = document.getElementById('vialText');
+            if (elVialText) elVialText.textContent = numVials > 1 ? 'each vial' : 'the vial';
+
+            // New instruction placeholders
+            setText('materialsVialsCount', numVials);
+            setText('materialsMgPerVial', vialQuantity.toFixed(1));
+            setText('materialsConcentration', calculatedConcentration.toFixed(1));
+            setText('materialsTotalBac', totalBac.toFixed(1));
+
+            // Draw-up math
+            const drawUpAmount = totalBac + primingReserve;
+            setText('totalBacDisplay', totalBac.toFixed(1));
+            setText('primingReserveDisplay', primingReserve.toFixed(1));
+            setText('drawUpAmountDisplay', drawUpAmount.toFixed(1));
+
+            // Purge down amount before splitting to vials: reserve final flush
+            const purgeDownTo = totalBac - finalFlushReserve;
+            const splitVolume = purgeDownTo;
+            setText('purgeDownToDisplay', purgeDownTo.toFixed(1));
+            setText('splitVolumeDisplay', splitVolume.toFixed(1));
+            setText('splitVolumeDisplay_2', splitVolume.toFixed(1));
+            // New: per-vial split helper for Step 8 wording
+            const splitPerVial = numVials > 0 ? splitVolume / numVials : 0;
+            setText('splitVolumePerVialDisplay', splitPerVial.toFixed(1));
+
+            // Fixed reserves used later
+            setText('finalFlushReserveDisplay', finalFlushReserve.toFixed(1));
+            setText('finalFlushReserveDisplay_2', finalFlushReserve.toFixed(1));
+            setText('finalFlushReserveDisplay_3', finalFlushReserve.toFixed(1));
+            setText('finalFlushReserveDisplay_4', finalFlushReserve.toFixed(1));
+            setText('preVentPressInVolumeDisplay', preVentPressIn.toFixed(1));
             
             // Update summary values
             document.getElementById('numVialsDisplay').textContent = numVials;
@@ -935,6 +977,16 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.labelElements.numVialsSelect.value = '1';
         updateDropdownValue('units', '');
         document.getElementById('warningMessage').style.display = 'none';
+
+        // Clear new placeholders if present
+            const idsToClear = [
+            'materialsVialsCount','materialsMgPerVial','materialsConcentration','materialsTotalBac',
+            'totalBacDisplay','primingReserveDisplay','drawUpAmountDisplay',
+            'purgeDownToDisplay','splitVolumeDisplay','splitVolumeDisplay_2','splitVolumePerVialDisplay',
+            'finalFlushReserveDisplay','finalFlushReserveDisplay_2','finalFlushReserveDisplay_3','finalFlushReserveDisplay_4',
+            'preVentPressInVolumeDisplay'
+        ];
+        idsToClear.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = 'X'; });
     }
 
     // Function to update a dropdown value
@@ -1518,6 +1570,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Start the application initialization
     initializeApp();
+
+    // Utility to safely set text on an element by id
+    function setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = value;
+        }
+    }
 
     // Add reset button handler
     document.getElementById('resetSettingsButton').addEventListener('click', () => {
