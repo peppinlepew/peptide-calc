@@ -45,6 +45,14 @@
         <div class="motivation-note">
             <p>This calculator simplifies peptide reconstitution by determining the precise amount of BAC water needed to achieve clean, round numbers of units per dose. No more mental math or imprecise measurements!</p>
         </div>
+        <!-- Tabs -->
+        <div class="tab-buttons" role="tablist" aria-label="Sections">
+            <button id="tab-btn-calculator" class="tab-button active" role="tab" aria-selected="true" aria-controls="tab-calculator">Calculator</button>
+            <button id="tab-btn-instructions" class="tab-button" role="tab" aria-selected="false" aria-controls="tab-instructions">Reconstitution Instructions</button>
+            <button id="tab-btn-labels" class="tab-button" role="tab" aria-selected="false" aria-controls="tab-labels">Label Generator</button>
+        </div>
+
+        <div id="tab-calculator" class="tab-content active" role="tabpanel" aria-labelledby="tab-btn-calculator">
         <div class="calculator-card">
             <div class="input-group" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
                 <div style="flex: 2; min-width: 300px; max-width: 100%;">
@@ -125,10 +133,15 @@
             </div>
             <p id="warningMessage" class="warning-message" style="display:none;">Warning: Calculated concentration exceeds the recommended maximum threshold.</p>
         </div>
+        </div>
 
+        <div id="tab-instructions" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-instructions">
         <div class="calculator-card">
             <h2>Reconstitution Instructions</h2>
             <div class="instructions-content" style="padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
+                <div style="display:flex; justify-content:flex-end; margin-bottom: 0.75rem;">
+                    <button id="printInstructionsButton" class="secondary-button" type="button">Print Instructions</button>
+                </div>
                 <div style="margin-bottom: 1rem; padding: 1rem; background-color: #e9ecef; border-radius: 4px;">
                     <strong>Summary:</strong>
                     <ul style="margin: 0.5rem 0 0 0;">
@@ -144,6 +157,7 @@
                 <ul>
                     <li>3 × ⅝” needles</li>
                     <li>1 × 1 ½” needle</li>
+                    <li>sterile alcohol wipes</li>
                     <li>1 × 3 ml syringe</li>
                     <li>1 × sterile 0.22μm filter</li>
                     <li><span id="materialsVialsCount">X</span> peptide vials containing <span id="materialsMgPerVial">X</span> mg each</li>
@@ -164,6 +178,7 @@
 
                 <ol style="margin: 0; padding-left: 1.5rem;">
                     <li>Sanitize everything with 70% IPA</li>
+                    <li>Wipe down the cartridge and vial tops with sterile wipes</li>
                     <li>Draw up <span id="totalBacDisplay">X</span> ml + <span id="primingReserveDisplay">0.3</span> ml = <strong><span id="drawUpAmountDisplay">X</span> ml</strong> of BAC, or more</li>
                     <li>Attach filter and ⅝” needle to BAC. Purge all air out of filter and needle</li>
                     <li>Insert the needle + filter into the cart. Leave this needle + filter in the cart until the entire process is complete</li>
@@ -186,7 +201,9 @@
                 </ol>
             </div>
         </div>
+        </div>
 
+        <div id="tab-labels" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-labels">
         <div class="calculator-card">
             <h2>Label Generator</h2>
             <div class="input-group">
@@ -231,6 +248,7 @@
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     </div>
     <script src="script.js"></script>

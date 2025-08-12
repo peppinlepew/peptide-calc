@@ -565,6 +565,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Create peptide type selector
         createPeptideTypeSelector();
+
+        // Initialize tabs behavior
+        initializeTabs();
         
         // Initialize dropdowns
         dropdowns = {};
@@ -647,6 +650,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (inputs[0]) {
             inputs[0].dispatchEvent(new Event('change'));
         }
+
+        // Print button for instructions
+        const printBtn = document.getElementById('printInstructionsButton');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                // Switch to instructions tab before printing
+                activateTab('tab-instructions', 'tab-btn-instructions');
+                setTimeout(() => window.print(), 100);
+            });
+        }
+    }
+
+    function initializeTabs() {
+        const tabs = [
+            { btn: 'tab-btn-calculator', panel: 'tab-calculator' },
+            { btn: 'tab-btn-instructions', panel: 'tab-instructions' },
+            { btn: 'tab-btn-labels', panel: 'tab-labels' },
+        ];
+
+        tabs.forEach(({ btn, panel }) => {
+            const btnEl = document.getElementById(btn);
+            const panelEl = document.getElementById(panel);
+            if (!btnEl || !panelEl) return;
+            btnEl.addEventListener('click', () => activateTab(panel, btn));
+        });
+    }
+
+    function activateTab(panelId, btnId) {
+        document.querySelectorAll('.tab-button').forEach(b => {
+            const isActive = b.id === btnId;
+            b.classList.toggle('active', isActive);
+            b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            b.tabIndex = isActive ? 0 : -1;
+        });
+        document.querySelectorAll('.tab-content').forEach(p => {
+            p.classList.toggle('active', p.id === panelId);
+        });
     }
     
     // Function to load saved settings from localStorage
